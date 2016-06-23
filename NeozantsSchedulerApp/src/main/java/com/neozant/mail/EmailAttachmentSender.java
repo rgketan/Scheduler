@@ -107,14 +107,15 @@ public class EmailAttachmentSender {
 	/**
 	 * Test sending e-mail with attachments
 	 */
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		
 		EmailAttachmentSender mail=new EmailAttachmentSender();
 		
 		String path="C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\DESTINATION_DIRECTORY\\ROHAN.xls";
 		
-		//mail.sendEmailWithAttachment(path);
+		mail.sendEmailWithAttachment(path);
 	}
+	*/
 	
 	
 	

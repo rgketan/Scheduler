@@ -11,7 +11,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
+import org.apache.log4j.Logger;
 import com.neozant.enums.EnumConstants;
 import com.neozant.helper.ServerHelper;
 import com.neozant.interfaces.IMessageValidator;
@@ -22,9 +22,6 @@ import com.neozant.response.GenericResponse;
 import com.neozant.response.SchedulerResponse;
 import com.neozant.timerfacility.TimerTaskManager;
 import com.neozant.validator.ScheduleDataValidator;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
 
 @Path("schedule")
 public class SchedulerApis {
