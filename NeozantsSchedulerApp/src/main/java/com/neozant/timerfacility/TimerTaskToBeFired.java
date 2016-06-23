@@ -24,7 +24,7 @@ public class TimerTaskToBeFired implements Job{
 		
 		logger.info("TimerTaskToBeFired:: STARTED EXECUTING");
 		
-		System.out.println("TimerTaskToBeFired:: STARTED EXECUTING");
+		//System.out.println("TimerTaskToBeFired:: STARTED EXECUTING");
 		
 		JobKey jKey = ctx.getJobDetail().getKey();
 		JobDataMap jMap = ctx.getJobDetail().getJobDataMap();
@@ -34,7 +34,7 @@ public class TimerTaskToBeFired implements Job{
 		
 		logger.info("TimerTaskToBeFired:: ScheduleData FOUND NAME::"+scheduleData.getOutputFileName());
 		
-		System.out.println("TimerTaskToBeFired:: ScheduleData FOUND NAME::"+scheduleData.getOutputFileName());
+		//System.out.println("TimerTaskToBeFired:: ScheduleData FOUND NAME::"+scheduleData.getOutputFileName());
 		
 		
 		boolean responseFlag;
@@ -44,12 +44,12 @@ public class TimerTaskToBeFired implements Job{
 		ServerHelper helper=ServerHelper.getServerHelperObject();
 		responseFlag=helper.perfomAction(scheduleData);
 		
-		System.out.println("TimerTaskToBeFired:: Firing timer job with Key :: [" + jKey + "]");
+		//System.out.println("TimerTaskToBeFired:: Firing timer job with Key :: [" + jKey + "]");
 		
 		logger.info("TimerTaskToBeFired:: Firing timer job with Key :: [" + jKey + "]");
 		
 		if(responseFlag){
-			System.out.println("TimerTaskToBeFired:: JOB DONE FILE WITH NAME:"+scheduleData.getOutputFileName()+" IS BEEN CREATED ");
+			//System.out.println("TimerTaskToBeFired:: JOB DONE FILE WITH NAME:"+scheduleData.getOutputFileName()+" IS BEEN CREATED ");
 			logger.info("TimerTaskToBeFired:: JOB DONE FILE WITH NAME:"+scheduleData.getOutputFileName()+" IS BEEN CREATED ");
 			
 			String destinationDirectory = System.getenv("DESTINATION_DIRECTORY");
@@ -58,7 +58,7 @@ public class TimerTaskToBeFired implements Job{
 			sendEmail(outputFilePath,scheduleData.getToEmailId());
 			
 		}else{
-			System.out.println("TimerTaskToBeFired:: ERROR WHILE EXECUTING TASK");
+			//System.out.println("TimerTaskToBeFired:: ERROR WHILE EXECUTING TASK");
 			logger.error("TimerTaskToBeFired:: ERROR WHILE EXECUTING TASK");
 		}
 	}
@@ -75,7 +75,7 @@ public class TimerTaskToBeFired implements Job{
 		emailHelper.sendEmailWithAttachment(fileToAttach,toAddress);
 		}catch(Exception ex){
 			logger.error("TimerTaskToBeFired:: ERROR WHILE SENDING EMAIL");
-			System.out.println("TimerTaskToBeFired:: ERROR WHILE SENDING EMAIL");
+			//System.out.println("TimerTaskToBeFired:: ERROR WHILE SENDING EMAIL");
 			successFlag=false;
 			ex.printStackTrace();
 		}

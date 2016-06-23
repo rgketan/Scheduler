@@ -81,7 +81,8 @@ public class EmailAttachmentSender {
 			for (String filePath : emailContent.getAttachFiles()) {
 				MimeBodyPart attachPart = new MimeBodyPart();
 
-				System.out.println("File path adding::"+filePath);
+				logger.info("EmailAttachmentSender::File path adding::"+filePath);
+				//System.out.println("File path adding::"+filePath);
 				try {
 					attachPart.attachFile(filePath);
 				} catch (IOException ex) {
@@ -183,11 +184,11 @@ public class EmailAttachmentSender {
 			dbprops.load(inputStream);
 			//dbprops.load(new FileInputStream(propertyFileName));//"db.properties"));
 		} catch (FileNotFoundException e) {
-			System.out.println("EmailAttachmentSender:: ERROR UNABLE TO FIND PROPERTY FILE::"+e.getMessage());
+			//System.out.println("EmailAttachmentSender:: ERROR UNABLE TO FIND PROPERTY FILE::"+e.getMessage());
 			logger.error("EmailAttachmentSender:: ERROR UNABLE TO FIND PROPERTY FILE::"+e.getMessage());
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.out.println("EmailAttachmentSender:: ERROR UNABLE TO LOAD PROPERTY FILE::"+e.getMessage());
+			//System.out.println("EmailAttachmentSender:: ERROR UNABLE TO LOAD PROPERTY FILE::"+e.getMessage());
 			logger.error("EmailAttachmentSender:: ERROR UNABLE TO LOAD PROPERTY FILE::"+e.getMessage());
 			e.printStackTrace();
 		}

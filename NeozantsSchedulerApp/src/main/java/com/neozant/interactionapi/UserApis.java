@@ -1,5 +1,7 @@
 package com.neozant.interactionapi;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,13 +26,21 @@ public class UserApis {
 	@Produces(MediaType.APPLICATION_JSON)
 	public UserResponse loginUser(UserRequest user){
 		
+		Map<String,String> userNamePassword=new HashMap<String,String>();
+		
+		userNamePassword.put("admin","admin");
+		userNamePassword.put("rohan","rohan");
+		userNamePassword.put("k","k");
+		
 		logger.info("USER TRYING TO LOGIN IS::"+user.getUsername());
 		
 		UserResponse userResponse=new UserResponse();
 		
-		if(user.getUsername().equals("admin") && user.getPassword().equals("admin"))
+		if(userNamePassword.containsKey(user.getUsername())&&
+		   userNamePassword.get(user.getUsername()).equals(user.getPassword()))//user.getUsername().equals("admin") && user.getPassword().equals("admin"))
+		{	
 			userResponse.setResponseStatus("success");
-		else{
+		}else{
 			userResponse.setResponseStatus("failure");
 			userResponse.setDetailMessageOnFailure("USERNAME OR PASSWORD IS INVALID");
 		}

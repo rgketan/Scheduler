@@ -9,7 +9,7 @@ import java.sql.Statement;
 
 import org.apache.log4j.Logger;
 
-import com.neozant.dbconnectivity.ConnectionPool;
+import com.neozant.dbconnectivity.GetDbConnection;
 import com.neozant.enums.EnumConstants;
 import com.neozant.filehelper.FileHelper;
 import com.neozant.request.ScheduleDataRequest;
@@ -19,7 +19,7 @@ public class ServerHelper {
 
 	final static Logger logger = Logger.getLogger(ServerHelper.class);
 	
-	private ConnectionPool conn;
+	private GetDbConnection conn;
 	
 	
 	private static ServerHelper serverHelper=null;
@@ -35,10 +35,10 @@ public class ServerHelper {
 	
 	private ServerHelper() {
 		try {
-			this.conn = new ConnectionPool(EnumConstants.DBPROPERTYFILE.getConstantType());
+			this.conn = new GetDbConnection(EnumConstants.DBPROPERTYFILE.getConstantType());
 			logger.info("SERVERHELPER::INTIALIZING HELPER AND DATABASE ...");
 			
-			System.out.println("SERVERHELPER::INTIALIZING HELPER AND DATABASE ...");
+			//System.out.println("SERVERHELPER::INTIALIZING HELPER AND DATABASE ...");
 		}catch (Exception e) {
 			logger.debug(e.getMessage());
 			logger.error("SERVERHELPER::ERROR WE GET IS:"+e.getMessage()+"|| connection object::"+this.conn.toString());
@@ -63,7 +63,7 @@ public class ServerHelper {
 			
 			logger.info("SERVERHELPER:: OUTPUT FILE WILL BE CREATED AT:"+outputFilePath);
 			
-			System.out.println("SERVERHELPER:: OUTPUT FILE WILL BE CREATED AT:"+outputFilePath);
+			//System.out.println("SERVERHELPER:: OUTPUT FILE WILL BE CREATED AT:"+outputFilePath);
 			
 			
 			/*if(!scheduleData.getFileFormat().equalsIgnoreCase(EnumConstants.XSLFILETYPE.getConstantType()) && 
@@ -84,7 +84,7 @@ public class ServerHelper {
 			e.printStackTrace();
 		}
 		logger.info("SERVERHELPER:: PEFORMED ACTION");
-		System.out.println("SERVERHELPER:: PEFORMED ACTION");
+		//System.out.println("SERVERHELPER:: PEFORMED ACTION");
 		
 		return successFlag;
 	}
@@ -101,7 +101,7 @@ public class ServerHelper {
 			e.printStackTrace();
 		}	
 		logger.info("Got DB Connection  " + this.conn.toString());
-		System.out.println("Got DB Connection  " + this.conn.toString());
+		//System.out.println("Got DB Connection  " + this.conn.toString());
 		return dbConn;
 	}
 	
@@ -116,7 +116,7 @@ public class ServerHelper {
 			}
 			in.close();
 			logger.info("CONTENT WE GET IS:::" + sb.toString());
-			System.out.println("CONTENT WE GET IS:::" + sb.toString());
+			//System.out.println("CONTENT WE GET IS:::" + sb.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("SERVERHELPER::Failed to Execute" + pathOfTheFile

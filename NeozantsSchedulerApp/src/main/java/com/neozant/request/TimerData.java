@@ -11,6 +11,7 @@ public class TimerData {
 	private int minutes;
 	
 	private String amPmMarker;
+	private String repeatOn;
 	
 	
 	public TimerData() {
@@ -96,6 +97,14 @@ public class TimerData {
 	
 	public void setAmPmMarker(String amPmMarker) {
 		this.amPmMarker = amPmMarker;
+	}
+
+	public String getRepeatOn() {
+		return repeatOn;
+	}
+
+	public void setRepeatOn(String repeatOn) {
+		this.repeatOn = repeatOn;
 	}
 
 

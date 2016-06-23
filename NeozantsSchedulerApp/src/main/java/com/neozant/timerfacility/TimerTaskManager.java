@@ -2,9 +2,11 @@ package com.neozant.timerfacility;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -16,6 +18,7 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 
+import com.neozant.enums.EnumConstants;
 import com.neozant.request.ScheduleDataRequest;
 import com.neozant.request.TimerData;
 
@@ -77,7 +80,8 @@ public class TimerTaskManager {
 			this.timerTaskScheduler.shutdown();
 			
 		} catch (SchedulerException e) {
-			System.out.println("ERROR :: Failed to stop TimerManager");
+			logger.error("TimerTaskManager::ERROR :: Failed to stop TimerManager:"+e.getMessage());
+			//System.out.println("ERROR :: Failed to stop TimerManager");
 			e.printStackTrace();
 		}
 	}
@@ -92,8 +96,8 @@ public class TimerTaskManager {
 				
 				String dateInString = timerData.getDate()+"-"+timerData.getMonth()+"-"+timerData.getYear()+" "+timerData.getHour()+":"+timerData.getMinutes()+":00 "+timerData.getAmPmMarker();
 				
-				
-				System.out.println("DATE IN STRING WE GET IS::"+dateInString);
+				logger.info("TimerTaskManager::DATE IN STRING WE GET IS::"+dateInString);
+				//System.out.println("DATE IN STRING WE GET IS::"+dateInString);
 				
 				SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss aa");
 			    
@@ -104,7 +108,7 @@ public class TimerTaskManager {
 			    
 			    logger.info("TIMER OF THE DATA TO BE FIRED IS::::"+sdf.format(date));
 				
-			    System.out.println("TIMER OF THE DATA TO BE FIRED IS::::"+sdf.format(date));
+			    //System.out.println("TIMER OF THE DATA TO BE FIRED IS::::"+sdf.format(date));
 			    
 				JobDataMap jobData = new JobDataMap();
 				jobData.put("scheduleData",scheduleData);
@@ -120,12 +124,49 @@ public class TimerTaskManager {
 				StringBuffer trigID = new StringBuffer().append("Trig-")
 														.append(sb.toString());
 				
-				Trigger jobTrigger = TriggerBuilder.newTrigger()
-												   .withIdentity(trigID.toString(), this.apiServiceGroupID)
-												   .startAt(date)
-												   .withSchedule(SimpleScheduleBuilder.simpleSchedule())
-												   .build();
-		
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(date);
+				int hours = calendar.get(Calendar.HOUR_OF_DAY);
+				int minutes = calendar.get(Calendar.MINUTE);
+				
+				Trigger jobTrigger ;
+				
+				
+				switch(timerData.getRepeatOn().toLowerCase()){
+				case "daily":
+					logger.info("TimerTaskManager::SCHEDULING FOR DAILY TIMER");
+					jobTrigger= TriggerBuilder.newTrigger()
+					   			.withIdentity(trigID.toString(), this.apiServiceGroupID)
+					   			.startAt(date)
+					   			.withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(hours,minutes))
+					   			.build();
+					break;
+				case "weekday":
+					logger.info("TimerTaskManager::SCHEDULING FOR WEEKDAY TIMER");
+					String expressionForWeekdayTimer="0 "+minutes+" "+hours+" ? * MON-SAT";
+					jobTrigger= TriggerBuilder.newTrigger()
+							    .withIdentity(trigID.toString(), this.apiServiceGroupID)
+							    .startAt(date)
+							    .withSchedule(CronScheduleBuilder.cronSchedule(expressionForWeekdayTimer))
+							    .build();
+					break;
+				case "onetime":
+					logger.info("TimerTaskManager::SCHEDULING FOR ONE TIMER");
+					jobTrigger= TriggerBuilder.newTrigger()
+		   						.withIdentity(trigID.toString(), this.apiServiceGroupID)
+		   						.startAt(date)
+		   						.withSchedule(SimpleScheduleBuilder.simpleSchedule())
+		   						.build();
+				    break;
+				default:
+					logger.info("TimerTaskManager::SCHEDULING FOR DEFAULT ONE TIMER");
+					jobTrigger= TriggerBuilder.newTrigger()
+		   						.withIdentity(trigID.toString(), this.apiServiceGroupID)
+		   						.startAt(date)
+		   						.withSchedule(SimpleScheduleBuilder.simpleSchedule())
+		   						.build();
+					break;
+				}
 				
 				// [kv]: Finally, we register the job/trigger combination with the scheduler.
 				try {

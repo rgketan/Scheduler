@@ -25,6 +25,7 @@ import com.neozant.interfaces.IFileWriter;
 public class WriteExcel implements IFileWriter{
 
 	final static Logger logger = Logger.getLogger(WriteExcel.class);
+	
 	private WritableCellFormat timesBoldUnderline;
 	private WritableCellFormat times;
 	private String inputFile;
@@ -83,7 +84,8 @@ public class WriteExcel implements IFileWriter{
 			//COLUMN NAME
 			for (int i = 1; i <= colunmCount; i++) {
 				 String columnName=rs.getMetaData().getColumnName(i);
-				 System.out.println("WriteExcel::COLUMN NAME WE GET IS:"+columnName);
+				 logger.info("WriteExcel::COLUMN NAME WE GET IS:"+columnName);
+				 //System.out.println("WriteExcel::COLUMN NAME WE GET IS:"+columnName);
 				 addCaption(sheet, i - 1, 0,columnName);
 			}
 
@@ -117,7 +119,7 @@ public class WriteExcel implements IFileWriter{
 		logger.info("OUTPUT FILE NAME WE GET IS:::"+fileName);
 		setOutputFile(fileName);
 		
-		System.out.println("OUTPUT FILE NAME WE GET IS:::"+fileName);
+		//System.out.println("OUTPUT FILE NAME WE GET IS:::"+fileName);
 
 		try {
 			writeContent(rs);
@@ -131,7 +133,8 @@ public class WriteExcel implements IFileWriter{
 			
 		}
 
-		System.out.println("Please check the result file under  " + fileName);
+		logger.info("Please check the result file under  " + fileName);
+		//System.out.println("Please check the result file under  " + fileName);
 	}
 
 	// END MINE

@@ -1,6 +1,5 @@
 package com.neozant.dbconnectivity;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +16,7 @@ import com.neozant.helper.ServerHelper;
 
 
 
-public class ConnectionPool implements Runnable {
+public class ConnectionsPool implements Runnable {
   final static Logger logger = Logger.getLogger(ServerHelper.class);
   private String driver, url, username, password;
   private int initialConnections;
@@ -27,7 +26,7 @@ public class ConnectionPool implements Runnable {
   private List<Connection> busyConnections;
   private boolean connectionPending = false;
 
-  public ConnectionPool(String propertyFileName)
+  public ConnectionsPool(String propertyFileName)
       throws SQLException {
       		Properties dbprops = new Properties(); 
       		try {
@@ -64,14 +63,14 @@ public class ConnectionPool implements Runnable {
     	    for(int i=0; i<initialConnections; i++) {
     	      availableConnections.add(makeNewConnection());
     	    }
-    	    logger.info("ConnectionPool:: ");
+    	    logger.info("ConnectionPool::ESTABLISHED::"+toString());
     	    
-    	    System.out.println("CONNECTION ESTABLISHED::"+toString());
+    	    //System.out.println("CONNECTION ESTABLISHED::"+toString());
 	  
   }
   
   
-  public ConnectionPool(String driver, String url,
+  public ConnectionsPool(String driver, String url,
                         String username, String password,
                         int initialConnections,
                         int maxConnections,

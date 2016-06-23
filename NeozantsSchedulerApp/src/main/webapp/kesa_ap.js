@@ -105,6 +105,7 @@ kesa.AdminPanelView.prototype={
 				
 				$("#menu1").removeClass("active");
 				$("#menu3").removeClass("active");
+				
 				break;
 			case 4:	
 				$("#process1").removeClass("btn-info");
@@ -449,6 +450,7 @@ kesa.AdminPanelView.prototype={
 			
 			this.pageVisibilityState =2 ;
 			this.showPageAsPerState();
+			$("#kesaTestConnectionBtn").show();
 			
 		},
 		dashboardOptionClicked:function(evt){

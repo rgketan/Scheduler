@@ -51,7 +51,6 @@ public class DB2CSV {
                 int k=0;
                  
                 int j=1;
-                 
                 System.out.println("TABLE NAME"+tableName);
                  
                 List<String> columnsNameList  = new ArrayList<String>();

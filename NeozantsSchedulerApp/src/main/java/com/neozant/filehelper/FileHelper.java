@@ -21,8 +21,8 @@ public class FileHelper {
 		
 		IFileWriter fileWriter;
 		
-		logger.info("FileHelper:: WRITING CONTENT TO FILE::");
-		System.out.println("FileHelper:: WRITING CONTENT TO FILE::"+fileFormat);
+		logger.info("FileHelper:: WRITING CONTENT TO FILE::"+fileFormat);
+		//System.out.println("FileHelper:: WRITING CONTENT TO FILE::"+fileFormat);
 		
 		if(fileFormat.equalsIgnoreCase(EnumConstants.XLSFILETYPE.getConstantType())) 
 		{

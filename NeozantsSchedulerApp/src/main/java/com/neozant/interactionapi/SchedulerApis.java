@@ -24,6 +24,7 @@ import com.neozant.timerfacility.TimerTaskManager;
 import com.neozant.validator.ScheduleDataValidator;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
 
 @Path("schedule")
 public class SchedulerApis {
@@ -43,7 +44,12 @@ public class SchedulerApis {
 	
 	//ServerHelper helper;
 	public SchedulerApis(){
-		logger.info("INTIALIZED  SchedulerApis");
+		logger.info("CONSTRUCTOR:: INTIALIZED  SchedulerApis");
+		 /*String log4jConfigFile = System.getProperty("user.dir")
+	                + File.separator + "log4j.xml";
+	    System.out.println("CONSTRUCTOR::FILE NAME::"+log4jConfigFile);
+	    DOMConfigurator.configure(log4jConfigFile);*/
+	        
 		/*timerTaskManager=new TimerTaskManager("API");
 		timerTaskManager.start();*/
 	}

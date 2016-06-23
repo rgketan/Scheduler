@@ -133,25 +133,26 @@ public class ScheduleDataValidator implements IMessageValidator{
 								+ " "+timerData.getAmPmMarker();
 			
 
-			System.out.println("DATE IN STRING WE GET IS::"+dateInString);
-			
+			//System.out.println("DATE IN STRING WE GET IS::"+dateInString);
+			logger.info("DATE IN STRING WE GET IS::"+dateInString);
 			SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss aa");
 
 			Date dateWeGet = sdf.parse(dateInString),
 				 currentDate = new Date();
 			
-			System.out.println("DATE WE GET FROM CLIENT::"+dateWeGet+"|| CURRENT DATE::"+currentDate);
+			logger.info("DATE WE GET FROM CLIENT::"+dateWeGet+"|| CURRENT DATE::"+currentDate);
 			
 			if(!currentDate.before(dateWeGet)){
 				
 				detailMessageOnFailure="DATE ENTERED IS NOT VALID";
-				System.out.println("ScheduleDataValidator:: DATE ENTERED IS NOT VALID::");
+				logger.info("ScheduleDataValidator:: DATE ENTERED IS NOT VALID::");
+				//System.out.println("ScheduleDataValidator:: DATE ENTERED IS NOT VALID::");
 			}
 			
 			
 		} catch (ParseException e) {
 			logger.error("ScheduleDataValidator:: ERROR while date parsing:"+e.getMessage());
-			System.out.println("ScheduleDataValidator:: ERROR while date parsing:"+e.getMessage());
+			//System.out.println("ScheduleDataValidator:: ERROR while date parsing:"+e.getMessage());
 			detailMessageOnFailure = "DATE ParseException "+e.getMessage();
 			e.printStackTrace();
 		}
@@ -182,8 +183,8 @@ public class ScheduleDataValidator implements IMessageValidator{
 			
 			detailMessageOnFailure="INVALID EMAIL ID";
 		}
-		
-		System.out.println("VALIDATION COMPLETE");
+		logger.info("ScheduleDataValidator::Email VALIDATION COMPLETE");
+		//System.out.println("VALIDATION COMPLETE");
 		return detailMessageOnFailure;
 		
 	}
@@ -196,6 +197,11 @@ public class ScheduleDataValidator implements IMessageValidator{
 		
 		String emailId="ks@s.co";
 		
-		vali.checkIfValidEmailId(emailId);
+		//vali.checkIfValidEmailId(emailId);
+		TimerData timerData=new TimerData(2016,07,19,12,1,"am");
+		//if(vali.checkIfValidDate(timerData)==null?"YES":"NO");
+		
+		
+		System.out.println("VALID DATE:::"+vali.checkIfValidDate(timerData));
 	}*/
 }
