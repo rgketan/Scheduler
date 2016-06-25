@@ -107,13 +107,11 @@ public class SchedulerApis {
 		Connection conn=null;
 		
 		try{
-			//ServerHelper helper=new ServerHelper();
-			
-			ServerHelper helper=ServerHelper.getServerHelperObject();
+			ServerHelper helper=new ServerHelper();
 			conn= helper.getConnection();
 		}catch(Exception ex){
 			conn=null;
-			logger.error("UNABLE TU SCHEDULE EVENT: "+ex.getMessage());
+			logger.error("UNABLE TO SCHEDULE EVENT: "+ex.getMessage());
 			ex.printStackTrace();
 			schedulerResponse.setDetailMessageOnFailure(ex.getMessage());
 		}
@@ -121,8 +119,9 @@ public class SchedulerApis {
 		if(conn!=null){
 			schedulerResponse.setResponseStatus("success");
 		}else{
-			schedulerResponse.setDetailMessageOnFailure("UNABLE TO CONNECT TO D/B");
-			schedulerResponse.setResponseStatus("fail");
+			
+			//schedulerResponse.setDetailMessageOnFailure("Could not establish the connection with D/B");
+			schedulerResponse.setResponseStatus("failure");
 		}
 		
 		return schedulerResponse;
@@ -134,7 +133,22 @@ public class SchedulerApis {
 	@Produces(MediaType.APPLICATION_JSON)
 	public ConfigurationResponse getConfigData(){
 		logger.info("GETTING Configuration DATA FOR POPULATING FIELDS");
-		return getConfigMetaData();
+		ConfigurationResponse configurationResponse=new ConfigurationResponse();
+		String successFlag = "success";
+		
+		try{
+		ServerHelper helper=new ServerHelper();
+		configurationResponse=helper.getConfigMetaData();
+		}catch(Exception ex){
+			logger.error("UNABLE TO SCHEDULE EVENT: "+ex.getMessage());
+			ex.printStackTrace();
+			successFlag = "failure";
+			configurationResponse.setDetailMessageOnFailure(ex.getMessage());
+		}
+		
+		configurationResponse.setResponseStatus(successFlag);
+		
+		return configurationResponse;
 	}
 	
 	
@@ -144,76 +158,19 @@ public class SchedulerApis {
 	@Produces(MediaType.APPLICATION_JSON)
 	public ScheduleDataRequest scheduleEvent(){
 		logger.info("GETTING ScheduleData from  testing APIS");
-		return getScheduleData();
+		ScheduleDataRequest scheduleDataRequest=new ScheduleDataRequest();
+		try{
+			ServerHelper helper=new ServerHelper();
+			scheduleDataRequest=helper.getScheduleData();
+			}catch(Exception ex){
+				logger.error("UNABLE TO SCHEDULE EVENT: "+ex.getMessage());
+				ex.printStackTrace();
+			}
+		
+		return scheduleDataRequest;
 	}
 
-	private ConfigurationResponse getConfigMetaData(){
-		ConfigurationResponse config=new ConfigurationResponse();
-		//SOURCE_DIRECTORY
-		//DESTINATION_DIRECTORY
-		final String sourceDirectory = System.getenv(EnumConstants.ENVFORSOURCE.getConstantType());
-		
-		final String destinationDirectory = System.getenv(EnumConstants.ENVFORDEST.getConstantType());
-		
-		logger.info("Getting PATH of source file::"+sourceDirectory+"| Destination:"+destinationDirectory);
-		
-		if(sourceDirectory == null || destinationDirectory==null){
-			
-			logger.error("ENVIORMENT VARIABLE IS NOT SET | SOURCE FILE PATH:"+sourceDirectory+", DESTINATION PATH:"+destinationDirectory );
-			config.setResponseStatus("failure");
-			config.setDetailMessageOnFailure("SOURCE DIRECTORY WE GET IS:"+sourceDirectory+"|| DESTINATION :"+destinationDirectory);
-		}else{
-			config.setResponseStatus("success");
-			
-			ArrayList<String> listOfFormat=new ArrayList<String>();
-			listOfFormat.add(EnumConstants.XLSFILETYPE.getConstantType());
-			listOfFormat.add(EnumConstants.CSVFILETYPE.getConstantType());
-			config.setFileFormatSupported(listOfFormat);
-			
-			config.setOutputFilePath(destinationDirectory);
-			config.setSourceFilePath(sourceDirectory);
-			
-			
-			ArrayList<String> listOfSourceFile=new ArrayList<String>();
-			File f1 = new File(sourceDirectory);
-			
-			File[] fileObjects = f1.listFiles();
-			 for(File file : fileObjects){
-				 listOfSourceFile.add(file.getAbsolutePath());
-				 logger.info("SOURCE FILE PATH WE GET::"+file.getAbsolutePath());
-			 }
-			config.setListOfSourceFiles(listOfSourceFile);
-		}
-		return config;
-	}
 	
-	private ScheduleDataRequest getScheduleData(){
-		
-		ScheduleDataRequest scheduleData=new ScheduleDataRequest();
-		TimerData timerData=new TimerData();
-		timerData.setDate(01);
-		timerData.setHour(20);
-		timerData.setMinutes(17);
-		timerData.setMonth(06);
-		timerData.setYear(2016);
-		
-		timerData.setAmPmMarker(EnumConstants.AMMARKER.getConstantType());
-		
-		String sqlFilePath="/Volumes/DATA/WORK/NEOZANT/EBSSqlReports/Testing.sql";
-	    
-		/*final String value = System.getenv("HOME");
-		 System.out.println(value);
-		 File f1 = new File(value);
-		 System.out.println(f1);
-		 System.out.println(f1.list());*/
-		 
-		scheduleData.setSqlFilePath(sqlFilePath);
-		scheduleData.setFileFormat("xls");
-		scheduleData.setOutputFileName("ROHAN");
-		scheduleData.setTimerData(timerData);
-		
-		return scheduleData;
-	}
 	
 	
 	public static void main(String[] args) {

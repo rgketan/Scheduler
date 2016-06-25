@@ -1,5 +1,7 @@
 package com.neozant.request;
 
+import java.util.ArrayList;
+
 
 public class ScheduleDataRequest extends GenericRequestType{
 
@@ -14,6 +16,8 @@ public class ScheduleDataRequest extends GenericRequestType{
 	
 	private TimerData timerData;
 
+	ArrayList<String> mulipleAddress; 
+	
 	public ScheduleDataRequest() {
 
 	}
@@ -75,5 +79,16 @@ public class ScheduleDataRequest extends GenericRequestType{
 		this.toEmailId = toEmailId;
 	}
 
-	
+	public ArrayList<String> getMulipleAddress() {
+		if(mulipleAddress==null){
+			mulipleAddress=new ArrayList<String>(); 
+		}
+		return mulipleAddress;
+	}
+
+
+
+	public void setMulipleAddress(ArrayList<String> mulipleAddress) {
+		this.mulipleAddress = mulipleAddress;
+	}
 }

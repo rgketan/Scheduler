@@ -7,7 +7,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.chainsaw.Main;
 
 import com.neozant.enums.EnumConstants;
 import com.neozant.interfaces.IMessageValidator;

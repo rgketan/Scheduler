@@ -13,6 +13,7 @@ public class EmailContent {
 	String message; 
 	ArrayList<String> attachFiles;
 	
+	ArrayList<String> mulipleAddress; 
 	
 	
 	
@@ -89,6 +90,21 @@ public class EmailContent {
 	}
 	public void setAttachFiles(ArrayList<String> attachFiles) {
 		this.attachFiles = attachFiles;
+	}
+
+
+
+	public ArrayList<String> getMulipleAddress() {
+		if(mulipleAddress==null){
+			mulipleAddress=new ArrayList<String>(); 
+		}
+		return mulipleAddress;
+	}
+
+
+
+	public void setMulipleAddress(ArrayList<String> mulipleAddress) {
+		this.mulipleAddress = mulipleAddress;
 	}
 	
 	

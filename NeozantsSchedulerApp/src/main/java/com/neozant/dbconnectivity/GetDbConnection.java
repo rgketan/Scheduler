@@ -41,7 +41,7 @@ public class GetDbConnection {
 	    this.username = dbprops.get("user").toString();
 	    this.password = dbprops.get("password").toString();
 	     
-	    logger.info("ConnectionPool::InitialConnections POOL::USER:"+this.username+"||PASSWORD::"+this.password);
+	    logger.info("GetDbConnection::InitialConnections POOL::USER:"+this.username+"||PASSWORD::"+this.password);
 	   
 	    
 	   // logger.info("ConnectionPool::NEW IS ESTABLISHED");
@@ -64,8 +64,11 @@ public class GetDbConnection {
 		      // throwing only one exception type.
 		    	logger.error("GetDbConnection::Can't find class for driver: "+cnfe.getMessage());
 		    	cnfe.printStackTrace();
-		      throw new SQLException("Can't find class for driver: " +
-		                             driver);
+		      throw new SQLException("Can't find class for driver: "+driver);
+		    }catch(SQLException ex){
+		    	logger.error("GetDbConnection::Could not connect to D/B : "+url+"| with User Name:"+username);
+		    	ex.printStackTrace();
+		    	throw new SQLException("Could not connect to D/B:" +url);
 		    }
 	}
 	 

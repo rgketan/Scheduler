@@ -31,7 +31,7 @@ public class EmailAttachmentSender {
 	public EmailAttachmentSender() {}
 	
 		
-	private  void sendEmailWithAttachmentsFromProperty(EmailContent emailContent)throws AddressException, MessagingException {
+	private  void sendEmailWithEmailContent(EmailContent emailContent)throws AddressException, MessagingException {
 		
 		
 		// sets SMTP server properties
@@ -62,8 +62,31 @@ public class EmailAttachmentSender {
 		Message msg = new MimeMessage(session);
 
 		msg.setFrom(new InternetAddress(userName));
-		InternetAddress[] toAddresses = { new InternetAddress(emailContent.getToAddress()) };
+		
+		
+		InternetAddress[] toAddresses = { 
+				new InternetAddress(emailContent.getToAddress()) 
+		};
+		
+		
+		
 		msg.setRecipients(Message.RecipientType.TO, toAddresses);
+		
+		
+		if (emailContent.getMulipleAddress() != null
+				&& emailContent.getMulipleAddress().size() > 0) {
+
+			InternetAddress[] recipientAddress = new InternetAddress[emailContent.getMulipleAddress().size()];
+			int counter = 0;
+			for (String recipient : emailContent.getMulipleAddress()) {
+				recipientAddress[counter] = new InternetAddress(recipient.trim());
+				counter++;
+			}
+			msg.setRecipients(Message.RecipientType.CC, recipientAddress);
+
+		}
+		
+		
 		msg.setSubject(emailContent.getSubject());
 		msg.setSentDate(new Date());
 
@@ -119,23 +142,23 @@ public class EmailAttachmentSender {
 	
 	
 	
-	public boolean sendEmailWithAttachment(String filePath,String toAddress){
+	public boolean sendEmailWithAttachment(String filePath,String toAddress,ArrayList<String> multipleAddress){
 		
 		//"C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\DESTINATION_DIRECTORY\\ROHAN.xls"
 		boolean successFlag=true;
 		try {
-			sendEmailWithAttachmentsFromProperty(getEmailContent(filePath,toAddress));
-			System.out.println("Email sent.");
+			sendEmailWithEmailContent(getEmailContent(filePath,toAddress,multipleAddress));
+			logger.info("EmailAttachmentSender::Email sent successfully.");
 		} catch (AddressException e) {
 			successFlag=false;
 			e.printStackTrace();
-			System.out.println("EmailAttachmentSender:: ERROR while sending EMAIL AddressException:"+e.getMessage());
+			//System.out.println("EmailAttachmentSender:: ERROR while sending EMAIL AddressException:"+e.getMessage());
 			logger.error("EmailAttachmentSender:: ERROR while sending EMAIL AddressException:"+e.getMessage());
 		} catch (MessagingException e) {
 			successFlag=false;
 			e.printStackTrace();
 			logger.error("EmailAttachmentSender:: ERROR while sending EMAIL MessagingException:"+e.getMessage());
-			System.out.println("EmailAttachmentSender:: ERROR while sending EMAIL MessagingException:"+e.getMessage());
+			//System.out.println("EmailAttachmentSender:: ERROR while sending EMAIL MessagingException:"+e.getMessage());
 		}
 		
 		return successFlag;
@@ -143,9 +166,39 @@ public class EmailAttachmentSender {
 		
 	}
 	
+	public boolean sendEmailWithMessage(String toAddress,String subject,String message,ArrayList<String> multipleAddress){
+		
+		boolean successFlag=true;
+		
+		EmailContent emailContent=new EmailContent();
+		
+		Properties property=readProperty(EnumConstants.EMAILPROPERTYFILE.getConstantType());
+		
+		emailContent.setHost(property.getProperty("host"));
+		emailContent.setPort(property.getProperty("port"));
+		emailContent.setUserName(property.getProperty("user"));
+		emailContent.setPassword(property.getProperty("password"));
+		
+		emailContent.setSubject(subject);
+		emailContent.setMessage(message);
+		
+		emailContent.setToAddress(toAddress);//property.getProperty("to"));
+		
+		emailContent.setMulipleAddress(multipleAddress);
+		
+			try {
+				sendEmailWithEmailContent(emailContent);
+			} catch (MessagingException e) {
+				successFlag=false;
+				e.printStackTrace();
+				logger.error("EmailAttachmentSender:: ERROR while sending EMAIL MessagingException:"+e.getMessage());
+			}
+			
+		return successFlag;
+	}
 	
 	
-	private EmailContent getEmailContent(String fileToAttach,String toAddress){
+	private EmailContent getEmailContent(String fileToAttach,String toAddress,ArrayList<String> multipleAddress){
 	
 			EmailContent emailContent=new EmailContent();
 		
@@ -153,22 +206,15 @@ public class EmailAttachmentSender {
 			
 			emailContent.setHost(property.getProperty("host"));
 			emailContent.setPort(property.getProperty("port"));
-			
-			
 			emailContent.setUserName(property.getProperty("user"));
-			
-			
 			emailContent.setToAddress(toAddress);//property.getProperty("to"));
-			
-			
 			emailContent.setPassword(property.getProperty("password"));
+			emailContent.setMulipleAddress(multipleAddress);
+			
 			emailContent.setSubject(property.getProperty("subject"));
-			
 			emailContent.setMessage(property.getProperty("message"));
-			
 			ArrayList<String> attachedFiles=new ArrayList<String>();
 			attachedFiles.add(fileToAttach);
-			
 			emailContent.setAttachFiles(attachedFiles);
 			
 		
