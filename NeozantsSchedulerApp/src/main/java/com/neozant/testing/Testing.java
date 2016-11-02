@@ -12,14 +12,8 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
-
-import org.quartz.CronScheduleBuilder;
-import org.quartz.SimpleScheduleBuilder;
-import org.quartz.TriggerBuilder;
 
 import com.neozant.enums.EnumConstants;
 import com.neozant.request.ScheduleDataRequest;
@@ -74,29 +68,6 @@ public class Testing {
 		 
 		 
 	}
-	
-	
-	private void testSplitting(){
-		
-		
-		String address="rvaijapure@lao.ten.fujitsu.com;[jbecerra@rio.ten.fujitsu.com,ket@gmail.com]";
-		
-		String[] emailIds= address.split(";");
-		
-		String toEmailId=emailIds[0],
-			   listOfaddresses=emailIds[1];
-		 
-		String recepientAddresses =listOfaddresses.replace("[","").replace("]","");
-		ArrayList<String> myList = new ArrayList<String>();
-		
-		System.out.println("InitiateServlet: RecipientAddress we get is :"+listOfaddresses+" and size:"+recepientAddresses);
-		if(recepientAddresses.length()>0){
-			myList.addAll(Arrays.asList(recepientAddresses.split(",")));
-		}
-		
-		
-		System.out.println("RESULT WE GET::: TO::"+toEmailId+"|recepients::"+myList.toString());
-	}
 	public static void main(String[] args) {
 		Testing testing=new Testing();
 		
@@ -105,11 +76,9 @@ public class Testing {
 		
 		
 		
-		//testing.tesCSV();
+		testing.tesCSV();
 		
-		//testing.testingEnum("onetime");
 		
-		testing.testSplitting();
 	
 	}
 
@@ -335,35 +304,5 @@ public class Testing {
 		scheduleData.setTimerData(timerData);
 		
 		return scheduleData;
-	}
-	
-	
-	
-	private void testingEnum(String repeatOn){
-		
-		EnumConstants enconst=EnumConstants.valueOf(repeatOn.toUpperCase());
-		
-		 System.out.println("ENUM VALUES WE GET IS::::"+enconst);
-		switch(enconst){//timerData.getRepeatOn().toLowerCase()){
-		case DAILY:
-			System.out.println("TimerTaskManager::SCHEDULING FOR DAILY TIMER");
-			
-			break;
-		case WEEKDAY:
-			System.out.println("TimerTaskManager::SCHEDULING FOR WEEKDAY TIMER");
-			
-			break;
-		case ONETIME:
-			System.out.println("TimerTaskManager::SCHEDULING FOR ONE TIMER");
-			
-		    break;
-		default:
-			System.out.println("TimerTaskManager::SCHEDULING FOR DEFAULT ONE TIMER");
-			
-			break;
-		}
-		
-		
-		
 	}
 }

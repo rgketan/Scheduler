@@ -1,7 +1,8 @@
 package com.neozant.timerfacility;
 
-import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.quartz.Job;
@@ -10,16 +11,19 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobKey;
 
+import com.neozant.enums.EnumConstants;
+import com.neozant.helper.DataStorageHelper;
 import com.neozant.helper.ServerHelper;
 import com.neozant.mail.EmailAttachmentSender;
 import com.neozant.request.ScheduleDataRequest;
+import com.neozant.storage.DetailsOfScheduledEventObject;
+import com.neozant.storage.ScheduledEventObject;
 
 public class TimerTaskToBeFired implements Job{
 
 	final static Logger logger = Logger.getLogger(TimerTaskToBeFired.class);
 	
 	public TimerTaskToBeFired() {
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -38,42 +42,105 @@ public class TimerTaskToBeFired implements Job{
 		//System.out.println("TimerTaskToBeFired:: ScheduleData FOUND NAME::"+scheduleData.getOutputFileName());
 		//boolean responseFlag;
 		//ServerHelper helper=new ServerHelper();
-		
+		String outputFilePath=null;
+		String result="EXECUTED",
+			   emailStatus="SENT",
+			   fileUpload="UPLOADED";
 		try{
-			ServerHelper helper=new ServerHelper();
-			helper.perfomAction(scheduleData);
-			logger.info("TimerTaskToBeFired:: JOB DONE FILE WITH NAME:"+scheduleData.getOutputFileName()+" IS BEEN CREATED ");
-			String destinationDirectory = System.getenv("DESTINATION_DIRECTORY");
-			String outputFilePath=destinationDirectory+File.separator+scheduleData.getOutputFileName()+"."+scheduleData.getFileFormat();
-			logger.info("TimerTaskToBeFired:: Firing timer job with Key :: [" + jKey + "]");
+			ServerHelper helper=ServerHelper.getServerHelperObject();
+			outputFilePath=helper.perfomAction(scheduleData);
+			
 			logger.info("TimerTaskToBeFired:: OUTPUT FILE WE ARE GOING TO ATTACH IS ::" +outputFilePath);
-			sendEmail(outputFilePath,scheduleData.getToEmailId(),null,null,scheduleData.getMulipleAddress());
+			
+			//SENDING EMAIL
+			boolean emailStatusFlag=sendEmail(outputFilePath,scheduleData.getToEmailId(),null,null,scheduleData.getRecipientAddress());
+			if(!emailStatusFlag){
+				emailStatus="Failed to send";
+			}
+			
+			//TODO: REMOVING FOR NOW
+			/*//UPLOADING TO FTP SERVER
+			logger.info("TimerTaskToBeFired:: UPLOADING FILE TO FTP SERVER ::" +scheduleData.getEnvironmentName()+" TYPE OF REPORT::"+scheduleData.getTypeOfReport());
+			
+			FtpServerHelper ftpServerHelper=new FtpServerHelper();
+			boolean fileUploadStatus=ftpServerHelper.uploadFIleToFtpServer(outputFilePath, scheduleData.getEnvironmentName(), scheduleData.getTypeOfReport());
+			
+			if(!fileUploadStatus){
+				fileUpload="FAILED TO UPLOAD";
+			}*/
+			
 		}catch(Exception ex){
-			sendEmail(null,scheduleData.getToEmailId(),"ERROR WHILE FIRING SCHEDULE EVENT","REASON FOR FAILURE IS:"+ex.getMessage(),scheduleData.getMulipleAddress());
+			result="FAILED";
+			emailStatus="Failed to send";
+			sendEmail(null,scheduleData.getToEmailId(),"ERROR WHILE FIRING SCHEDULE EVENT","REASON FOR FAILURE IS:"+ex.getMessage(),scheduleData.getRecipientAddress());
 			//System.out.println("TimerTaskToBeFired:: ERROR WHILE EXECUTING TASK");
 			logger.error("TimerTaskToBeFired:: ERROR WHILE EXECUTING TASK|| SENDING EMAIL TO");
 			ex.printStackTrace();
 		}
+		//String eventName,String emailStatus,String executedTime,String ouputFileName,String result
+		addDetailsScheduleEvent(scheduleData.getOutputFileName(),emailStatus,outputFilePath,result,fileUpload);
 		
 	}
 	
 	
 	
-	private void sendEmail(String fileToAttach,String toAddress,String subject,String message,ArrayList<String> mulipleAddress){
+	private boolean sendEmail(String fileToAttach,String toAddress,String subject,String message,ArrayList<String> mulipleAddress){
 		
+		EmailAttachmentSender emailHelper = new EmailAttachmentSender();
+		boolean successFlag=true;
 		try {
-			EmailAttachmentSender emailHelper = new EmailAttachmentSender();
+			
 			if(fileToAttach!=null){
-				emailHelper.sendEmailWithAttachment(fileToAttach, toAddress,mulipleAddress);
+				successFlag=emailHelper.sendEmailWithAttachment(fileToAttach, toAddress,mulipleAddress);
 			}else{
-				emailHelper.sendEmailWithMessage(toAddress, subject, message,mulipleAddress);//SEND ERROR MESSAGE
+				successFlag=emailHelper.sendEmailWithMessage(toAddress, subject, message,mulipleAddress);//SEND ERROR MESSAGE
 			}
 		}catch(Exception ex){
+			successFlag=false;
 			logger.error("TimerTaskToBeFired:: ERROR WHILE SENDING EMAIL"+ex.getMessage());
 			//System.out.println("TimerTaskToBeFired:: ERROR WHILE SENDING EMAIL");
+			emailHelper.sendEmailWithMessage(toAddress, "ERROR WHILE SENDING EMAIL", ex.getMessage(),null);//SEND ERROR MESSAGE
 			ex.printStackTrace();
 		}
 		
+		return successFlag;
+		
 	}
 
+	
+	private void addDetailsScheduleEvent(String eventName,String emailStatus,String ouputFileName,String result,String ftpStatus){
+		DataStorageHelper dataStorageHelper=DataStorageHelper.getDataStorageHelper();
+		ScheduledEventObject scheduledEventObject=dataStorageHelper.getEvent(eventName);
+		if(scheduledEventObject!=null){
+			
+			   SimpleDateFormat dateFormat = new SimpleDateFormat("dd:MM:yyyy,hh:mm:ss:aa");
+		    
+		    
+			  // DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd||HH-mm-ss");
+			   //get current date time with Date()
+			   Date date = new Date();
+			   //System.out.println(dateFormat.format(date));
+			   
+			   
+			DetailsOfScheduledEventObject detailScheduledEventObject=new DetailsOfScheduledEventObject();
+			
+			detailScheduledEventObject.setEmailStatus(emailStatus);
+			detailScheduledEventObject.setExecutedTime(dateFormat.format(date));
+			detailScheduledEventObject.setOuputFileName(ouputFileName);
+			detailScheduledEventObject.setResult(result);
+			
+			detailScheduledEventObject.setFtpStatus(ftpStatus);
+			dataStorageHelper.addNewEventDetails(eventName, detailScheduledEventObject);
+			
+			
+			logger.info("TimerTaskToBeFired:: UPDATING EVENT STATUS OF EVENT ::" +eventName+" BY::"+scheduledEventObject.getTimerRepeatOn());
+			
+			String status=EnumConstants.EVENTSTATUSEXECUTING.getConstantType();
+			if(scheduledEventObject.getTimerRepeatOn().equalsIgnoreCase("onetime")){
+				status=EnumConstants.EVENTSTATUSFINISHED.getConstantType();
+			}
+			dataStorageHelper.updateEventStatus(eventName,status);
+			
+		}
+	}
 }

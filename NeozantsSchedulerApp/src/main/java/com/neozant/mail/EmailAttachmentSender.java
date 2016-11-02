@@ -39,9 +39,9 @@ public class EmailAttachmentSender {
 		properties.put("mail.smtp.host",emailContent.getHost());
 		properties.put("mail.smtp.port", emailContent.getPort());
 		
-		properties.put("mail.smtp.auth", "true");
-		properties.put("mail.smtp.starttls.enable", "true");
-		
+		properties.put("mail.smtp.auth",emailContent.getAuth());
+		properties.put("mail.smtp.starttls.enable", emailContent.getEnable());
+		properties.put("mail.debug", emailContent.getDebug());
 		
 		properties.put("mail.user", emailContent.getUserName());
 		properties.put("mail.password", emailContent.getPassword());
@@ -142,7 +142,7 @@ public class EmailAttachmentSender {
 	
 	
 	
-	public boolean sendEmailWithAttachment(String filePath,String toAddress,ArrayList<String> multipleAddress){
+	public boolean sendEmailWithAttachment(String filePath,String toAddress,ArrayList<String> multipleAddress)throws Exception{
 		
 		//"C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\DESTINATION_DIRECTORY\\ROHAN.xls"
 		boolean successFlag=true;
@@ -153,11 +153,13 @@ public class EmailAttachmentSender {
 			successFlag=false;
 			e.printStackTrace();
 			//System.out.println("EmailAttachmentSender:: ERROR while sending EMAIL AddressException:"+e.getMessage());
-			logger.error("EmailAttachmentSender:: ERROR while sending EMAIL AddressException:"+e.getMessage());
+			logger.error("EmailAttachmentSender::SendEmailWithAttachment ERROR while sending EMAIL AddressException:"+e.getMessage());
+			throw e;
 		} catch (MessagingException e) {
 			successFlag=false;
 			e.printStackTrace();
-			logger.error("EmailAttachmentSender:: ERROR while sending EMAIL MessagingException:"+e.getMessage());
+			logger.error("EmailAttachmentSender:: SendEmailWithAttachment ERROR while sending EMAIL MessagingException:"+e.getMessage());
+			throw e;
 			//System.out.println("EmailAttachmentSender:: ERROR while sending EMAIL MessagingException:"+e.getMessage());
 		}
 		
@@ -179,6 +181,13 @@ public class EmailAttachmentSender {
 		emailContent.setUserName(property.getProperty("user"));
 		emailContent.setPassword(property.getProperty("password"));
 		
+		emailContent.setDebug(property.getProperty("debug"));
+		
+		emailContent.setAuth(property.getProperty("auth"));
+		emailContent.setEnable(property.getProperty("enable"));
+		 
+		
+		
 		emailContent.setSubject(subject);
 		emailContent.setMessage(message);
 		
@@ -188,10 +197,11 @@ public class EmailAttachmentSender {
 		
 			try {
 				sendEmailWithEmailContent(emailContent);
+				logger.info("EmailAttachmentSender::SendEmailWithMessage Email sent successfully.");
 			} catch (MessagingException e) {
 				successFlag=false;
 				e.printStackTrace();
-				logger.error("EmailAttachmentSender:: ERROR while sending EMAIL MessagingException:"+e.getMessage());
+				logger.error("EmailAttachmentSender::SendEmailWithMessage ERROR while sending EMAIL MessagingException:"+e.getMessage());
 			}
 			
 		return successFlag;
@@ -213,6 +223,13 @@ public class EmailAttachmentSender {
 			
 			emailContent.setSubject(property.getProperty("subject"));
 			emailContent.setMessage(property.getProperty("message"));
+			
+			emailContent.setDebug(property.getProperty("debug"));
+			
+			emailContent.setAuth(property.getProperty("auth"));
+			emailContent.setEnable(property.getProperty("enable"));
+			
+			
 			ArrayList<String> attachedFiles=new ArrayList<String>();
 			attachedFiles.add(fileToAttach);
 			emailContent.setAttachFiles(attachedFiles);

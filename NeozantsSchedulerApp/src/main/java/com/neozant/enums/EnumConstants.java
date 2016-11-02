@@ -6,6 +6,7 @@ public enum EnumConstants {
 
 	DBPROPERTYFILE("db.properties"),
 	EMAILPROPERTYFILE("email.properties"),
+	FTPPROPERTYFILE("ftp.properties"),
 	
 	//SUPPORTED FORMAT
 	XLSFILETYPE("xls"),
@@ -17,7 +18,36 @@ public enum EnumConstants {
 	
 	//AM & PM MARKERS
 	AMMARKER("AM"),
-	PMMARKER("PM");
+	PMMARKER("PM"),
+	
+	//EVENT STATUS
+	EVENTSTATUSINITIATED("INITIATED"),
+	EVENTSTATUSFINISHED("FINISHED"),
+	EVENTSTATUSEXECUTING("EXECUTING"),
+	
+	EVENTSTATUSERROR("ERROR"),
+	//TIMER REPEAT ON
+	DAILY("daily"),
+	WEEKDAY("weekday"),
+	ONETIME("onetime"),
+	
+	//ftp details
+	FTPHOST("ftphost"),
+	FTPUSERNAME("ftpusername"),
+	FTPUSERPASSWORD("ftppassword"),
+	
+	FTPPRODUCTIONENVIORNMENT("production"),
+	FTPSTAGINGENVIORNMENT("staging"),
+	
+	FTPCOSTSREPORT("costs"),
+	FTPSALESREPORT("sales"),
+	
+	FTPPRODUCTIONSALESPATH("productionsalespath"),
+	FTPPRODUCTIONCOSTSPATH("productioncostspath"),
+	FTPSTAGINGSALESPATH("stagingsalespath"),
+	FTPSTAGINGCOSTSPATH("stagingcostspath");
+	
+	
 	
 	private String constantType;  
 	

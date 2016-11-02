@@ -95,7 +95,7 @@
 		
 		<div class="container kesa-simple-tile-bgodd kesa-page kesa-dashboard-modal" id="newProcessPage" >
 			<div class="row">
-				<button type="button" class="btn btn-info pull-left" id="kesaNavigateToHome">Home</button>
+				<button type="button" class="btn btn-info pull-left kesaNavigateToHome" id="kesaNavigateToHome">Home</button>
 			</div>	
 			<div class="container">
 			<div class="process">
@@ -162,6 +162,13 @@
 						 	 -->
 						</div>		
 					</div>
+					
+					<div class="row" >
+							<label> Enter Event Name :</label>
+							<input type="text" id="kesaFileName"> 
+							<!-- textarea rows="4" cols="40" id="kesaEmailIds"></textarea-->
+					</div>
+					
 					<div class="row" >
 						<label> Select Date : </label> <input type="date" id="kesaConfigDate"> <label> mm/dd/yyyy </label> 
 					</div>
@@ -176,10 +183,30 @@
 							<option> xls </option>
 						</select>
 					</div>
+					
+					<!--  
+					<div class="row" >
+						<label> Select Environment  :</label> 
+						<select class="dropdown" id="kesaEnvironmentRadioList">
+							<option> production </option>
+							<option> staging </option>
+						</select>
+					</div>
+					
+					<div class="row" >
+						<label> Type Of Report  :</label> 
+						<select class="dropdown" id="kesaTypeOfReportRadioList">
+							<option> sales </option>
+							<option> costs </option>
+						</select>
+					</div>
+					-->
+					
+					
 					<div class="row" >
 							<label> Enter Email Address :</label>
-							<input type="email" id="kesaEmailIds"> 
-							<!-- textarea rows="4" cols="40" id="kesaEmailIds"></textarea-->
+							<!-- input type="email" id="kesaEmailIds"--> 
+							<textarea rows="4" cols="40" id="kesaEmailIds"></textarea>
 					</div>
 					<br>
 					<div class="row" >
@@ -208,11 +235,17 @@
 					<h3>Confirmation </h3>
 					<div class="row">
 					Will trigger File :<span id="filePathConfirmation" class="dfn"> File Link URL </span><br/>
+					File Name: <span id="fileNameConfirmation" class="dfn">abx</span><br/>
 					On Date: <span id="dateConfirmation" class="dfn">2nd June 2016</span><br/>
 					On Time: <span id="timeConfirmation" class="dfn">2:00:PM</span><br/>
 					OutPut Extension Would be : <span id="outputConfirmation" class="dfn">CSV</span><br/>
 					Email would be sent to: <span id="emailsConfirmation" class="dfn">CSV,abc@abc.com</span><br/>
-					And repeated on <span id='repeatConfirmation' class='dfn'></span> basis<br/>
+					Repeated on <span id='repeatConfirmation' class='dfn'></span> basis<br/>
+					<!--
+					will Upload on : <span id="environmentConfirmation" class="dfn">STAGING</span><br/>
+					and Type of Report : <span id="typeOfReportConfirmation" class="dfn">COSTS</span><br/>
+					-->
+					
 					</div>
 					<div class="row">
 					
@@ -239,6 +272,101 @@
 		
 		
 	</div>
+
+
+	<div class="container kesa-simple-tile-bgodd kesa-page kesa-dashboard-modal" id="viewExistingProcessPage" >
+			<div class="row">
+				<div class="col-md-2">
+					<button type="button" class="btn btn-info pull-left kesaNavigateToHome" id="kesaNavigateToHome">Home</button>	
+				</div>
+				<div class="col-md-10">
+					<h1> Track Earlier Processes </h1>
+				</div>
+				
+			</div>	
+			<div class="container">
+				<div class="row">
+					<div class="col-md-2">
+						<input type="submit" class="form-control"  id="fetch-all-records" value="Fetch All Records" />
+					</div>
+					<div class="col-md-6 kesa-hide-me">
+					<input type="text" class="form-control"  placeholder="Search" />
+					</div>
+					<div class="col-md-2 kesa-hide-me">
+					<input type="submit" class="form-control"   value="Search" />
+					</div>
+				</div>
+				<div class="row" id="fetchTableResultMessage"></div>
+				<div class="table-responsive">
+					  <table class="table">
+					    <thead>
+					      <tr>
+					        <th>#</th>
+					        <th>Name Of Process</th>
+					        <th>File To Execute</th>
+					        <th>Date And Time</th>
+					        <th>Output Format</th>
+					        <th>Mode</th>
+					        <th>Email</th>
+					        <th>Status</th>
+					        <!--<th>Environment</th>
+					         th>Type Of Report</th>-->
+					        <th>Action</th> 
+					        
+					      </tr>
+					    </thead>
+					    <tbody id = "kesa-earlier-process-tbody">
+					      
+					    
+					    </tbody>
+					  </table>
+					  </div>
+
+			</div>
+	</div>
+	
+	  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Event Details</h4>
+        </div>
+        <div class="modal-body">
+					<div class="table-responsive">
+					  <table class="table">
+					    <thead>
+					      <tr>
+					        <th>#</th>
+					        <th>Execute Time</th>
+					        <th>Result</th>
+					        <th>Output File </th>
+					        <th>Email Status</th>
+					        <!-- th>Ftp Status</th--> 
+					      </tr>
+					    </thead>
+					    <tbody id = "kesa-earlier-processdetails-tbody">
+					    
+					    </tbody>
+					  </table>
+					  </div>
+
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+		
+
+
 	<script type="text/javascript" src="kesa_ap.js"></script>
 	
 	<div id='kesa-loader' class="kesa-loader-screen">

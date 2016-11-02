@@ -14,9 +14,15 @@ public class ScheduleDataRequest extends GenericRequestType{
 	
 	private String toEmailId;
 	
+	private boolean alreadyCreated;
+	
 	private TimerData timerData;
 
-	ArrayList<String> mulipleAddress; 
+	ArrayList<String> recipientAddress; 
+	
+	private String environmentName;
+	
+	private String typeOfReport;
 	
 	public ScheduleDataRequest() {
 
@@ -79,16 +85,42 @@ public class ScheduleDataRequest extends GenericRequestType{
 		this.toEmailId = toEmailId;
 	}
 
-	public ArrayList<String> getMulipleAddress() {
-		if(mulipleAddress==null){
-			mulipleAddress=new ArrayList<String>(); 
+	
+	public ArrayList<String> getRecipientAddress() {
+		if(recipientAddress==null){
+			recipientAddress=new ArrayList<String>(); 
 		}
-		return mulipleAddress;
+		return recipientAddress;
 	}
 
-
-
-	public void setMulipleAddress(ArrayList<String> mulipleAddress) {
-		this.mulipleAddress = mulipleAddress;
+	public void setRecipientAddress(ArrayList<String> recipientAddress) {
+		this.recipientAddress = recipientAddress;
 	}
+
+	public boolean isAlreadyCreated() {
+		return alreadyCreated;
+	}
+
+	public void setAlreadyCreated(boolean alreadyCreated) {
+		this.alreadyCreated = alreadyCreated;
+	}
+
+	public String getEnvironmentName() {
+		return environmentName;
+	}
+
+	public void setEnvironmentName(String environmentName) {
+		this.environmentName = environmentName;
+	}
+
+	public String getTypeOfReport() {
+		return typeOfReport;
+	}
+
+	public void setTypeOfReport(String typeOfReport) {
+		this.typeOfReport = typeOfReport;
+	}
+	
+	
+	
 }

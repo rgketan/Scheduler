@@ -10,6 +10,7 @@ import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
@@ -18,6 +19,7 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 
+import com.neozant.enums.EnumConstants;
 import com.neozant.request.ScheduleDataRequest;
 import com.neozant.request.TimerData;
 
@@ -93,12 +95,12 @@ public class TimerTaskManager {
 				
 				TimerData timerData=scheduleData.getTimerData();
 				
-				String dateInString = timerData.getDate()+"-"+timerData.getMonth()+"-"+timerData.getYear()+" "+timerData.getHour()+":"+timerData.getMinutes()+":00 "+timerData.getAmPmMarker();
+				String dateInString = timerData.getDate()+":"+timerData.getMonth()+":"+timerData.getYear()+","+timerData.getHour()+":"+timerData.getMinutes()+":00:"+timerData.getAmPmMarker();
 				
 				logger.info("TimerTaskManager::DATE IN STRING WE GET IS::"+dateInString);
 				//System.out.println("DATE IN STRING WE GET IS::"+dateInString);
 				
-				SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss aa");
+				SimpleDateFormat sdf = new SimpleDateFormat("dd:M:yyyy,hh:mm:ss:aa");
 			    
 			    Date date= sdf.parse(dateInString);
 				
@@ -115,7 +117,7 @@ public class TimerTaskManager {
 				JobBuilder jobBuilder = JobBuilder.newJob(TimerTaskToBeFired.class);
 				
 				JobDetail jobDetail = jobBuilder.usingJobData(jobData)
-												.withIdentity("myJob"+callerSuppliedUniqID, "group1"+callerSuppliedUniqID)
+												.withIdentity("neozantJob"+callerSuppliedUniqID, "neozantGroup"+callerSuppliedUniqID)
 												.withDescription("Job is to Fire Task And Create Report")
 												.build();
 				
@@ -131,8 +133,12 @@ public class TimerTaskManager {
 				Trigger jobTrigger ;
 				
 				
-				switch(timerData.getRepeatOn().toLowerCase()){
-				case "daily":
+				
+				EnumConstants enconst=EnumConstants.valueOf(timerData.getRepeatOn().toUpperCase());
+				
+				 logger.info("ENUM VALUES WE GET IS::::"+enconst);
+				switch(enconst){//timerData.getRepeatOn().toLowerCase()){
+				case DAILY:
 					logger.info("TimerTaskManager::SCHEDULING FOR DAILY TIMER");
 					jobTrigger= TriggerBuilder.newTrigger()
 					   			.withIdentity(trigID.toString(), this.apiServiceGroupID)
@@ -140,7 +146,7 @@ public class TimerTaskManager {
 					   			.withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(hours,minutes))
 					   			.build();
 					break;
-				case "weekday":
+				case WEEKDAY:
 					logger.info("TimerTaskManager::SCHEDULING FOR WEEKDAY TIMER");
 					String expressionForWeekdayTimer="0 "+minutes+" "+hours+" ? * MON-SAT";
 					jobTrigger= TriggerBuilder.newTrigger()
@@ -149,7 +155,7 @@ public class TimerTaskManager {
 							    .withSchedule(CronScheduleBuilder.cronSchedule(expressionForWeekdayTimer))
 							    .build();
 					break;
-				case "onetime":
+				case ONETIME:
 					logger.info("TimerTaskManager::SCHEDULING FOR ONE TIMER");
 					jobTrigger= TriggerBuilder.newTrigger()
 		   						.withIdentity(trigID.toString(), this.apiServiceGroupID)
@@ -172,6 +178,22 @@ public class TimerTaskManager {
 					
 					this.timerTaskScheduler.scheduleJob(jobDetail,jobTrigger);
 					
+					
+					System.out.println("NEOZANT::TIMER TASK ::"+jobTrigger);
+					
+					
+					//his.timerTaskScheduler.get
+					
+					//JobKey jobKeyObject=jobTrigger.getJobKey();
+					
+					//JobKey jobKey=new JobKey(jobKeyObject.getName(),jobKeyObject.getGroup());
+					
+					
+					//group1ID-2 || myJobID-2
+					//System.out.println("NEOZANT:: DELETED TASK::::"+this.timerTaskScheduler.deleteJob(jobKey));
+					
+					
+					
 				} catch (SchedulerException e) {
 					
 					logger.error("ERROR :: Failed to schedule job, with ID [" + jobDetail.getDescription() + "]");
@@ -181,8 +203,27 @@ public class TimerTaskManager {
 				
 				logger.info("Scheduled new job, with Key [" + jobDetail.getKey() + "]");
 					
+				//this.timerTaskScheduler.deleteJob(jobDetail.getKey());
 				return (trigID == null ? null : jobTrigger.getKey().getName());
 	}
 	
 
+	public boolean deleteTimerTask (String keyName){
+		boolean successFlag=true;
+		//neozantJob   neozantGroup
+		String jobID="neozantJob"+keyName,
+			   groupID="neozantGroup"+keyName;	
+		JobKey jobKey=new JobKey(jobID,groupID);
+		
+		try {
+			successFlag=this.timerTaskScheduler.deleteJob(jobKey);
+		} catch (SchedulerException e) {
+			// TODO Auto-generated catch block
+			successFlag=false;
+			e.printStackTrace();
+		}		
+		
+		return successFlag;
+	}
+		
 }

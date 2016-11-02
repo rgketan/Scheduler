@@ -10,7 +10,7 @@
     </appender>
   
     <appender name="Appender2" class="org.apache.log4j.FileAppender">
-       <param name="File" value="C://Users//Ketan//Desktop//SCHEDULER_RELATED//LOG//scheduler.log" />
+       <param name="File" value="C://scheduler.log" />
        <layout class="org.apache.log4j.PatternLayout">
           <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
        </layout>

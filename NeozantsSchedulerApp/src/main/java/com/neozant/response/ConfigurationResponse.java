@@ -1,6 +1,7 @@
 package com.neozant.response;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ConfigurationResponse extends GenericResponse{
 
@@ -8,7 +9,7 @@ public class ConfigurationResponse extends GenericResponse{
 	private String outputFilePath;
 	private String sourceFilePath;
 	private ArrayList<String> fileFormatSupported;
-
+	private List<String> recipientAddress;
 	
 
 	public ConfigurationResponse() {
@@ -21,7 +22,6 @@ public class ConfigurationResponse extends GenericResponse{
 		this.listOfSourceFiles = listOfSourceFiles;
 		this.outputFilePath = outputFilePath;
 		this.fileFormatSupported = fileFormatSupported;
-		
 		
 	}
 
@@ -56,6 +56,14 @@ public class ConfigurationResponse extends GenericResponse{
 
 	public void setSourceFilePath(String sourceFilePath) {
 		this.sourceFilePath = sourceFilePath;
+	}
+
+	public List<String> getRecipientAddress() {
+		return recipientAddress;
+	}
+
+	public void setRecipientAddress(List<String> arrayList) {
+		this.recipientAddress = arrayList;
 	}
 
 	

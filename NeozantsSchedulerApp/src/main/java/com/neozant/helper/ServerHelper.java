@@ -2,12 +2,21 @@ package com.neozant.helper;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -17,6 +26,9 @@ import com.neozant.filehelper.FileHelper;
 import com.neozant.request.ScheduleDataRequest;
 import com.neozant.request.TimerData;
 import com.neozant.response.ConfigurationResponse;
+import com.neozant.response.SchedulerResponse;
+import com.neozant.storage.ScheduledEventObject;
+import com.neozant.timerfacility.TimerTaskManager;
 
 
 public class ServerHelper {
@@ -25,23 +37,40 @@ public class ServerHelper {
 	
 	private GetDbConnection conn;
 	
+	private TimerTaskManager timerTaskManager;
 	
-	/*private static ServerHelper serverHelper=null;
+	private static ServerHelper serverHelper=null;
 	
+	
+	private DataStorageHelper dataStorageHelper;
 	public static ServerHelper getServerHelperObject(){
 		
 		if(serverHelper==null){
-			serverHelper=new ServerHelper();
+			
+			try {
+				serverHelper=new ServerHelper();
+			} catch (Exception e) {
+				
+				logger.error("SERVERHELPER::ERROR WHILE INITIATING ServerHelper OBJECT");
+				e.printStackTrace();
+			}
+			
 		}
 		
 		return serverHelper;
-	}*/
+	}
 	
-	public ServerHelper() throws Exception{
+	private ServerHelper() throws Exception{
 		try {
 			this.conn = new GetDbConnection(EnumConstants.DBPROPERTYFILE.getConstantType());
+			
+			dataStorageHelper=DataStorageHelper.getDataStorageHelper();
+			
 			logger.info("SERVERHELPER::INTIALIZING HELPER AND DATABASE ...");
 			
+			timerTaskManager = new TimerTaskManager("Scheduling EVENT API");
+			timerTaskManager.start();
+
 			//System.out.println("SERVERHELPER::INTIALIZING HELPER AND DATABASE ...");
 		}catch (Exception e) {
 			logger.debug(e.getMessage());
@@ -52,7 +81,7 @@ public class ServerHelper {
 	}
 	
 	
-	public void perfomAction(ScheduleDataRequest scheduleData) throws Exception{
+	public String perfomAction(ScheduleDataRequest scheduleData) throws Exception{
 		
 		//boolean successFlag=true;
 		
@@ -61,39 +90,39 @@ public class ServerHelper {
 			StringBuffer stringBuffer=readFile(scheduleData.getSqlFilePath());
 			Statement stmnt= this.conn.getConnection().createStatement();
 			
-			ResultSet rs = stmnt.executeQuery(stringBuffer.toString());
-		
-			final String destinationDirectory = System.getenv("DESTINATION_DIRECTORY");
+			//String fileContent=stringBuffer.toString();
 			
-			String outputFilePath=destinationDirectory+"\\"+scheduleData.getOutputFileName()+"."+scheduleData.getFileFormat();
+			//String[] listOfQueries=fileContent.split(";");
+			
+			ResultSet rs = stmnt.executeQuery(stringBuffer.toString());
+			
+			
+			
+			String destinationDirectory = System.getenv("DESTINATION_DIRECTORY");
+			
+			/*//ONLY WHEN ENVIORNMENT VARIABLE  IS NOT THERE
+			if(destinationDirectory==null){
+				destinationDirectory ="/Users/Ketan/Desktop/NEOZANT/DESTINATION";
+				
+			}*/
+			 
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm -ss");
+			   //get current date time with Date()
+			   Date date = new Date();
+			   System.out.println(dateFormat.format(date));
+			   
+			String outputFilePath=destinationDirectory+File.separator+scheduleData.getOutputFileName()+"_"+dateFormat.format(date)+"."+scheduleData.getFileFormat();
 			
 			logger.info("SERVERHELPER:: OUTPUT FILE WILL BE CREATED AT:"+outputFilePath);
 			
-			//System.out.println("SERVERHELPER:: OUTPUT FILE WILL BE CREATED AT:"+outputFilePath);
 			
+			FileHelper fileHelper=new FileHelper(scheduleData.getFileFormat());
+			fileHelper.writeContent(rs, outputFilePath);
 			
-			/*if(!scheduleData.getFileFormat().equalsIgnoreCase(EnumConstants.XSLFILETYPE.getConstantType()) && 
-			   !scheduleData.getFileFormat().equalsIgnoreCase(EnumConstants.CSVFILETYPE.getConstantType())){
-				
-				logger.error("SERVERHELPER::UNSUPPORTED FORMAT+"+scheduleData.getFileFormat());
-				System.out.println("SERVERHELPER::UNSUPPORTED FORMAT+"+scheduleData.getFileFormat());
-				successFlag=false;
-				
-			}else{*/
-				FileHelper fileHelper=new FileHelper(scheduleData.getFileFormat());
-				fileHelper.writeContent(rs, outputFilePath);
-			//}
-		
-		/*} catch (Exception e) {
-			logger.error("SERVERHELPER:: Exception caused while Performing Action:. The error is "+e.getMessage());
-			successFlag=false;
-			e.printStackTrace();
-			throw e;
-		}*/
 		logger.info("SERVERHELPER:: PEFORMED ACTION");
 		//System.out.println("SERVERHELPER:: PEFORMED ACTION");
 		
-		//return successFlag;
+		return outputFilePath;
 	}
 	
 	
@@ -114,7 +143,7 @@ public class ServerHelper {
 	}
 	
 	
-	public StringBuffer readFile(String pathOfTheFile) {
+	public StringBuffer readFile(String pathOfTheFile)throws Exception {
 		StringBuffer sb = new StringBuffer();
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(pathOfTheFile));
@@ -128,19 +157,33 @@ public class ServerHelper {
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("SERVERHELPER::Failed to Execute REASON:" + e.getMessage());
+			throw e;
 		}
 		
 		return sb;
 	}
 	
-	
+	//todo: add ENVIORNMENT NAME AND TYPE OF REPORT
 	public ConfigurationResponse getConfigMetaData(){
 		ConfigurationResponse config=new ConfigurationResponse();
+		
+		///Users/Ketan/Desktop/NEOZANT/SOURCE
+		///Users/Ketan/Desktop/NEOZANT/DESTINATION
+		
 		//SOURCE_DIRECTORY
 		//DESTINATION_DIRECTORY
-		final String sourceDirectory = System.getenv(EnumConstants.ENVFORSOURCE.getConstantType());
+		 String sourceDirectory = System.getenv(EnumConstants.ENVFORSOURCE.getConstantType());
 		
-		final String destinationDirectory = System.getenv(EnumConstants.ENVFORDEST.getConstantType());
+		 String destinationDirectory = System.getenv(EnumConstants.ENVFORDEST.getConstantType());
+		
+		
+		
+		 //TODO: DELETE (TAKE PATHS FROM PREOPERTY FILE)
+		if(sourceDirectory == null || destinationDirectory==null){
+			sourceDirectory ="/Users/Ketan/Desktop/NEOZANT/SOURCE";
+			destinationDirectory ="/Users/Ketan/Desktop/NEOZANT/DESTINATION";
+			
+		}
 		
 		logger.info("Getting PATH of source file::"+sourceDirectory+"| Destination:"+destinationDirectory);
 		
@@ -161,6 +204,16 @@ public class ServerHelper {
 			config.setSourceFilePath(sourceDirectory);
 			
 			
+			String listOfRecipients=readKeyValueFromPropertyFile(EnumConstants.EMAILPROPERTYFILE.getConstantType(),"recipientAddress");
+			String[] recipients=listOfRecipients.split(",");
+			
+			List<String> arrayList = new ArrayList<String>(); 
+			Collections.addAll(arrayList, recipients); 
+			
+			config.setRecipientAddress(arrayList);
+			
+			
+			
 			ArrayList<String> listOfSourceFile=new ArrayList<String>();
 			File f1 = new File(sourceDirectory);
 			
@@ -174,7 +227,8 @@ public class ServerHelper {
 		return config;
 	}
 	
-	public ScheduleDataRequest getScheduleData(){
+	//FOR TESTING
+	 public ScheduleDataRequest getScheduleData(){
 		
 		ScheduleDataRequest scheduleData=new ScheduleDataRequest();
 		TimerData timerData=new TimerData();
@@ -188,11 +242,11 @@ public class ServerHelper {
 		
 		String sqlFilePath="/Volumes/DATA/WORK/NEOZANT/EBSSqlReports/Testing.sql";
 	    
-		/*final String value = System.getenv("HOME");
+		final String value = System.getenv("HOME");
 		 System.out.println(value);
 		 File f1 = new File(value);
 		 System.out.println(f1);
-		 System.out.println(f1.list());*/
+		 System.out.println(f1.list());
 		 
 		scheduleData.setSqlFilePath(sqlFilePath);
 		scheduleData.setFileFormat("xls");
@@ -203,8 +257,113 @@ public class ServerHelper {
 		mulipleAddress.add("steamtechnics@gmail.com");
 		mulipleAddress.add("jija.1987@gmail.com");
 		
-		scheduleData.setMulipleAddress(mulipleAddress);
+		scheduleData.setRecipientAddress(mulipleAddress);
 		return scheduleData;
 	}
+	
+	
+	
+	private String readKeyValueFromPropertyFile(String propertyFileName,String key ){
+		
+
+		String keyValue=null;
+		try {
+			Properties dbprops = new Properties(); 
+			InputStream inputStream=getClass().getClassLoader().getResourceAsStream(propertyFileName);
+			dbprops.load(inputStream);
+			
+			keyValue = dbprops.get("recipientAddress").toString();
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			logger.error("ConnectionPool:: UNABLE TO FIND PROPERTY FILE::"+e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			logger.error("ConnectionPool:: UNABLE TO LOAD PROPERTY FILE::"+e.getMessage());
+			e.printStackTrace();
+		}
+		
+		return keyValue;
+	}	
+		
+	
+	//CHANGES FOR SCHEDULED RELATED
+	//logic
+	public SchedulerResponse hitTimerTask(ScheduleDataRequest scheduleData, String keyId){
+		
+		SchedulerResponse schedulerResponse = new SchedulerResponse();
+		String successFlag = "success";
+
+		try {
+			String triggerKey = timerTaskManager.scheduleTimerTask(scheduleData, keyId);
+			
+			logger.info("TRIGGER KEY WE GET IS::" + triggerKey);
+			schedulerResponse.setTriggerKey(triggerKey);
+			
+			//ADDING DATA TO DATABASE
+			//ServerHelper helper=ServerHelper.getServerHelperObject();
+			
+			String status=EnumConstants.EVENTSTATUSINITIATED.getConstantType();
+			
+			logger.info("STATUS:::" + status);
+			ScheduledEventObject scheduledEventObject=getScheduledEventObject(scheduleData,keyId,status,triggerKey);
+			
+			
+			dataStorageHelper.addNewEvent(scheduleData.getOutputFileName(), scheduledEventObject);
+			
+		} catch (Exception ex) {
+			logger.error("SchedulerApis:: ERROR UNABLE TO SCHEDULE EVENT: " + ex.getMessage());
+			successFlag = "failure";
+			schedulerResponse.setDetailMessageOnFailure(ex.getMessage());
+			ex.printStackTrace();
+		}
+		
+		schedulerResponse.setResponseStatus(successFlag);
+		return schedulerResponse;
+	}
+	
+	
+	
+	public boolean deleteTimerTask(String jobKeyName){
+		
+		return timerTaskManager.deleteTimerTask(jobKeyName);
+	}
+	
+	
+	
+	private ScheduledEventObject getScheduledEventObject(ScheduleDataRequest scheduleData, String uniqueId,String status,String jobKeyName){
+		
+		ScheduledEventObject scheduledEventObject =new ScheduledEventObject();
+		
+		scheduledEventObject.setDateAndTimeInString(scheduleData.getTimerData().toString());
+		
+		scheduledEventObject.setFileToExecute(scheduleData.getSqlFilePath());
+		
+		scheduledEventObject.setJobKeyName(jobKeyName);
+		//scheduledEventObject.setListOfDetailScheduledObject(listOfDetailScheduledObject);
+		scheduledEventObject.setNameOfScheduledTask(scheduleData.getOutputFileName());
+		
+		scheduledEventObject.setOutputFileFormat(scheduleData.getFileFormat());
+		
+		scheduledEventObject.setRecipientAddress(scheduleData.getToEmailId()+";"+scheduleData.getRecipientAddress().toString());
+		
+		scheduledEventObject.setStatus(status);
+		
+		scheduledEventObject.setTimerRepeatOn(scheduleData.getTimerData().getRepeatOn());
+		
+		scheduledEventObject.setUniqueId(uniqueId);
+		
+		scheduledEventObject.setEnvironmentName(scheduleData.getEnvironmentName());
+		scheduledEventObject.setTypeOfReport(scheduleData.getTypeOfReport());
+		
+		
+		return scheduledEventObject;
+	}
+	
+	
+	
+	
+	//CHANGES
 	
 }

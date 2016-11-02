@@ -9,9 +9,11 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import com.neozant.enums.EnumConstants;
+import com.neozant.helper.DataStorageHelper;
 import com.neozant.interfaces.IMessageValidator;
 import com.neozant.request.GenericRequestType;
 import com.neozant.request.ScheduleDataRequest;
+import com.neozant.request.ScheduleEventDetailsRequest;
 import com.neozant.request.TimerData;
 import com.neozant.response.GenericResponse;
 
@@ -37,15 +39,61 @@ public class ScheduleDataValidator implements IMessageValidator{
 			detailMessageOnFailure=scheduleMessageValidator(scheduleData);
 			
 			if(detailMessageOnFailure!=null){
+ 				successMessage="failure";
+			}
+			
+		}else if(request.getMessageType().equals("getScheduledEventDetails") || request.getMessageType().equals("deleteScheduledEvent")){
+			
+			ScheduleEventDetailsRequest scheduleData=(ScheduleEventDetailsRequest) request;
+			
+			detailMessageOnFailure=earlierProcessValidator(scheduleData);
+			
+			if(detailMessageOnFailure!=null){
 				
 				successMessage="failure";
 			}
+			
 			
 		}
 		
 		response.setResponseStatus(successMessage);
 		response.setDetailMessageOnFailure(detailMessageOnFailure);
 		return response;
+	}
+	
+	
+	
+	public String earlierProcessValidator(ScheduleEventDetailsRequest scheduleEventDetailsRequest){
+		
+		String detailMessageOnFailure=null;
+		
+		
+		if(scheduleEventDetailsRequest.getEventName()==null || scheduleEventDetailsRequest.getEventName().isEmpty()){
+			
+			detailMessageOnFailure="Event Name Cannot be NULL or EMPTY";
+		}else{
+			if(scheduleEventDetailsRequest.getUniqueId()==null || scheduleEventDetailsRequest.getUniqueId().isEmpty()){
+				
+				detailMessageOnFailure="Event ID Cannot be NULL or EMPTY";
+			}	
+			
+		}
+		
+		
+		if(detailMessageOnFailure==null){
+			DataStorageHelper dataStorageHelper=DataStorageHelper.getDataStorageHelper();
+			if(!dataStorageHelper.checkIfEventExist(scheduleEventDetailsRequest.getEventName())){
+				
+				detailMessageOnFailure="Event Name Does not EXIST";
+				System.out.println("ScheduleDataValidator:: ERROR Event Name Does not EXIST::"+scheduleEventDetailsRequest.getEventName());
+			}
+			
+		}
+		
+		
+		
+		return detailMessageOnFailure;
+		
 	}
 	
 	
@@ -62,18 +110,32 @@ public class ScheduleDataValidator implements IMessageValidator{
 				detailMessageOnFailure = "FILE FORMAT NOT SUPPORTED";
 				
 			}else{
-				
-				TimerData timerData = scheduleData.getTimerData();
-				
-				detailMessageOnFailure =checkIfValidDate(timerData);
+
+				detailMessageOnFailure =checkIfEnviormentAndTypeOfReportExist(scheduleData.getEnvironmentName(),scheduleData.getTypeOfReport());
 				
 				if(detailMessageOnFailure == null){
-					
 					detailMessageOnFailure =checkIfValidEmailId(scheduleData.getToEmailId());
 				}
 				
-				
+				if(detailMessageOnFailure==null){
+					
+						if(!scheduleData.isAlreadyCreated() || 
+						    scheduleData.getTimerData().getRepeatOn().equalsIgnoreCase(EnumConstants.ONETIME.getConstantType())) {
+							TimerData timerData = scheduleData.getTimerData();
+							detailMessageOnFailure =checkIfValidDate(timerData);
+						}
+						//DONT CHECK IF SERVER IS CREATING THE TASK
+						if(!scheduleData.isAlreadyCreated()){
+								DataStorageHelper dataStorageHelper=DataStorageHelper.getDataStorageHelper();
+								if(dataStorageHelper.checkIfEventExist(scheduleData.getOutputFileName())){
+									logger.error("ScheduleDataValidator:: ERROR EVENT NAME ALREADY EXIST");
+									detailMessageOnFailure="EVENT NAME ALREADY EXIST";
+								}
+						}
+				}
 			}
+		}else{
+			logger.error("ScheduleDataValidator:: ERROR found while validating ScheduleDataRequest:"+detailMessageOnFailure);
 		}
 		
 		
@@ -105,6 +167,10 @@ public class ScheduleDataValidator implements IMessageValidator{
 						if(scheduleData.getToEmailId()==null ){
 							
 							messageIfnull="EMAIL ID Cannot be NULL or EMPTY";
+						}else{
+							if(scheduleData.getTimerData().getRepeatOn()==null){
+								messageIfnull="RepeatOn attribute cannot be NULL or EMPTY";
+							}
 						}
 						
 					}
@@ -149,6 +215,7 @@ public class ScheduleDataValidator implements IMessageValidator{
 			}
 			
 			
+			
 		} catch (ParseException e) {
 			logger.error("ScheduleDataValidator:: ERROR while date parsing:"+e.getMessage());
 			//System.out.println("ScheduleDataValidator:: ERROR while date parsing:"+e.getMessage());
@@ -187,6 +254,32 @@ public class ScheduleDataValidator implements IMessageValidator{
 		return detailMessageOnFailure;
 		
 	}
+	
+	
+	private String checkIfEnviormentAndTypeOfReportExist(String enviorment,String typeOfReport){
+		
+		String detailMessageOnFailure=null;
+		
+		if (!enviorment.equalsIgnoreCase(EnumConstants.FTPPRODUCTIONENVIORNMENT.getConstantType())
+			    && !enviorment.equalsIgnoreCase(EnumConstants.FTPSTAGINGENVIORNMENT.getConstantType())) {
+
+			detailMessageOnFailure = "ENVIRONMENT:"+enviorment+" IS NOT SUPPORTED";
+			logger.error("ScheduleDataValidator::ENVIRONMENT:"+enviorment+" IS NOT SUPPORTED");
+		}
+		
+		
+		if(detailMessageOnFailure !=null){
+			if (!typeOfReport.equalsIgnoreCase(EnumConstants.FTPCOSTSREPORT.getConstantType())
+				&& !typeOfReport.equalsIgnoreCase(EnumConstants.FTPSALESREPORT.getConstantType())) {
+	
+				detailMessageOnFailure = "REPORT:"+enviorment+" IS NOT SUPPORTED";
+				logger.error("ScheduleDataValidator::REPORT TYPE:"+typeOfReport+" IS NOT SUPPORTED");
+			}
+		}
+			
+		return detailMessageOnFailure;
+	}
+	
 	
 	
 	/*public static void main(String[] args) {

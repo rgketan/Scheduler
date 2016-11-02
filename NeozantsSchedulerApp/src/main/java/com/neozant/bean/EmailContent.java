@@ -11,6 +11,10 @@ public class EmailContent {
 	String toAddress;
 	String subject;
 	String message; 
+	String debug;
+	String auth;
+	String enable;
+	
 	ArrayList<String> attachFiles;
 	
 	ArrayList<String> mulipleAddress; 
@@ -106,14 +110,41 @@ public class EmailContent {
 	public void setMulipleAddress(ArrayList<String> mulipleAddress) {
 		this.mulipleAddress = mulipleAddress;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+	public String getDebug() {
+		return debug;
+	}
+
+
+
+	public void setDebug(String debug) {
+		this.debug = debug;
+	}
+
+
+
+	public String getAuth() {
+		return auth;
+	}
+
+
+
+	public void setAuth(String auth) {
+		this.auth = auth;
+	}
+
+
+
+	public String getEnable() {
+		return enable;
+	}
+
+
+
+	public void setEnable(String enable) {
+		this.enable = enable;
+	}
 	
 }

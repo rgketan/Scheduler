@@ -25,11 +25,20 @@
   	<load-on-startup>1</load-on-startup>
   </servlet>
   
+  
+  <servlet>
+    <servlet-name>InitiateServer</servlet-name>
+    <servlet-class>com.neozant.servlet.InitiateServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+
   <servlet-mapping>
   	<servlet-name>NeozantsSchedulerApp</servlet-name>
   	<url-pattern>/neozant/*</url-pattern>
   </servlet-mapping>
   
   
-  
 </web-app>
+
+

@@ -1,6 +1,8 @@
 /**
  * 
  */
+
+ 	var SIMULATE_BACKEND =false;
 	var NEW_PROCESS_STATE = {
 			
 		//test connection not intiated
@@ -27,7 +29,7 @@
 			"PREV":"SHOW",
 			"DONE":"SHOW"
 		}
-	}
+	};
 	
 
 var kesa = kesa || {};
@@ -45,7 +47,8 @@ kesa.AdminPanelView = function(){
 	this.pageVisibilityStateMapper =  {
 		"1":"loginPage",
 		"2":"dashBoardPage",
-		"3":"newProcessPage"
+		"3":"newProcessPage",
+		"4":"viewExistingProcessPage"
 	};
 	this.pageVisibilityState= 1;
 	this.processStep = 1;
@@ -53,15 +56,20 @@ kesa.AdminPanelView = function(){
 	this.serviceMgr = new kesa.AdminPanelServiceLayer();
 	
 	this.configurationObject={
+			"FILE_NAME":"",
 			"SERVER_FILE_PATH":"",
 			"TIME":"",
 			"DATE":"",
 			"EXTENSION":"",
-			"EMAIL":""
+			"EMAIL":"",
+			"RECIPIENT_ADDRESS":"",
+			"ENVIRONMENT_NAME":"",
+			"TYPE_OF_REPORT":""
 			
 	};
+	this.recordList =[];
 	
-}	
+};	
 kesa.AdminPanelView.prototype={
 		
 		onAppLoaded :function(){
@@ -122,27 +130,27 @@ kesa.AdminPanelView.prototype={
 		renderUIBtns:function(obj){
 			//nxt
 			if(obj["NXT"] === "SHOW" ){
-				$("#kesaNextBtn").removeClass(this.hideMeClassIdentifier)
+				$("#kesaNextBtn").removeClass(this.hideMeClassIdentifier);
 			}else {
-				$("#kesaNextBtn").addClass(this.hideMeClassIdentifier)
+				$("#kesaNextBtn").addClass(this.hideMeClassIdentifier);
 			}
 			
 			
 			//nxt
 			if(obj["PREV"] === "SHOW" ){
-				$("#kesaBackBtn").removeClass(this.hideMeClassIdentifier)
+				$("#kesaBackBtn").removeClass(this.hideMeClassIdentifier);
 				
 			}else {
-				$("#kesaBackBtn").addClass(this.hideMeClassIdentifier)
+				$("#kesaBackBtn").addClass(this.hideMeClassIdentifier);
 			}
 			
 			
 			//nxt
 			if(obj["DONE"] === "SHOW" ){
-				$("#kesaDoneBtn").removeClass(this.hideMeClassIdentifier)
+				$("#kesaDoneBtn").removeClass(this.hideMeClassIdentifier);
 				
 			}else {
-				$("#kesaDoneBtn").addClass(this.hideMeClassIdentifier)
+				$("#kesaDoneBtn").addClass(this.hideMeClassIdentifier);
 			}
 			
 			
@@ -156,7 +164,7 @@ kesa.AdminPanelView.prototype={
 			$("#kesaDashboardEditUserDetails").on("click",this.dashboardOptionClicked.bind(this));
 			$("#kesaDashboardCreateMoreUsers").on("click",this.dashboardOptionClicked.bind(this));
 			
-			$("#kesaNavigateToHome").on("click",this.navigateToHome.bind(this));
+			$(".kesaNavigateToHome").on("click",this.navigateToHome.bind(this));
 			
 			$("#kesaTestConnectionBtn").on("click",this.testConnectivity.bind(this));
 			
@@ -164,6 +172,11 @@ kesa.AdminPanelView.prototype={
 			
 			$("#kesaBackBtn").on("click",this.processStepPrevBtnClicked.bind(this));
 			$("#kesaDoneBtn").on("click",this.processStepDoneBtnClicked.bind(this));
+
+			//kesa-earlier-process-tbody
+
+			$("#fetch-all-records").on("click",this.fetchAllRecordsClicked.bind(this));
+			
 			
 			//$("#kesaFetchFileList").on("click",this.fetchFileListClicked.bind(this));//KV
 			
@@ -172,7 +185,7 @@ kesa.AdminPanelView.prototype={
 			
 			var dataArr = this.configurationObject["DATE"].split("-");
 			var timeArr = this.configurationObject["TIME"].split(":");
-			var timerData ={}
+			var timerData ={};
 			if(dataArr.length === 3){
 				timerData["date"] =dataArr[2];
 				timerData["month"] =dataArr[1];
@@ -187,16 +200,20 @@ kesa.AdminPanelView.prototype={
 			}
 			
 			
-			
 			var reqObject ={
 					"timerData":timerData,
 					"sqlFilePath":this.configurationObject["SERVER_FILE_PATH"],
 					"fileFormat":this.configurationObject["EXTENSION"] ,
 					"fromEmailId":"",
 					"toEmailId":this.configurationObject["EMAIL"],
-					"outputFileName":$("#kesaUserName").val()+"_"+this.configurationObject["DATE"]+"_"+this.configurationObject["TIME"].replace(":","-")
-			}
+					"recipientAddress":this.configurationObject["RECIPIENT_ADDRESS"],
+					"alreadyCreated":false,
+					"environmentName":this.configurationObject["ENVIRONMENT_NAME"],
+					"typeOfReport":this.configurationObject["TYPE_OF_REPORT"],
+					"outputFileName":this.configurationObject["FILE_NAME"]//$("#kesaUserName").val()+"_"+this.configurationObject["DATE"]+"_"+this.configurationObject["TIME"].replace(":","-")
+			};//CHANGE
 			
+			console.log("REQUEST OBJECT WE GET IS::",reqObject);
 			this.serviceMgr.triggerConfigSubmission(reqObject, this.onConfigSubmissionResponse.bind(this),this.onConfigSubmissionFailed.bind(this));
 			//this.onConfigSubmissionResponse();
 			
@@ -207,8 +224,8 @@ kesa.AdminPanelView.prototype={
 		},
 		onConfigSubmissionResponse :function(response){
 			$("#kesa-loader").hide();
-			console.log("EVENT BEEN TRIGGERED ::");
-			console.log(response);
+			//console.log("EVENT BEEN TRIGGERED ::");
+			//console.log(response);
 			if(response.responseStatus === "success"){
 			$("#postConfigSubmissionMsg").html("Sucessfully Submitted the configuration");
 			}else{
@@ -229,11 +246,11 @@ kesa.AdminPanelView.prototype={
 		onfileNamesFetchedResponse :function(resp){
 			$("#kesaFileRadioList").empty();//KV
 			
-			console.log("FETCH FILE RESPONSE::");
-			console.log(resp);
-			var strHTML =""
+			//console.log("FETCH FILE RESPONSE::");
+			//console.log(resp);
+			var strHTML ="";
 			for(var i =0;i<resp.length;i++){
-				strHTML += '<div><input type="radio" name="optFilePathRadio" value="'+resp[i]+'" checked="checked">'+resp[i]+'</div>'
+				strHTML += '<div><input type="radio" name="optFilePathRadio" value="'+resp[i]+'" checked="checked">'+resp[i]+'</div>';
 			}
 			$("#kesaFileRadioList").append(strHTML);
 			this.configurationObject["SERVER_FILE_PATH"] = ""; 
@@ -243,7 +260,7 @@ kesa.AdminPanelView.prototype={
 		},
 		
 		getSelectedRadioValue:function(str,codeReq){
-			var bVal = ""
+			var bVal = "";
 			var rates = document.getElementsByName(str);
 			for(var i = 0; i < rates.length; i++){
 			    if(rates[i].checked){
@@ -266,15 +283,20 @@ kesa.AdminPanelView.prototype={
 			this.configurationObject["DATE"] = "";
 			this.configurationObject["EXTENSION"] = "" ;
 			this.configurationObject["EMAIL"] = "" ;
-			this.configurationObject["REPEAT_ON"] =""
-			this.configurationObject["REPEAT_ON_CODE"] =""
-			
+			this.configurationObject["REPEAT_ON"] ="";
+			this.configurationObject["REPEAT_ON_CODE"] ="";
+			this.configurationObject["FILE_NAME"] ="";
+			this.configurationObject["ENVIRONMENT_NAME"] ="";
+			this.configurationObject["TYPE_OF_REPORT"] ="";
+				
+				
 				
 			this.configurationObject["REPEAT_ON"] = this.getSelectedRadioValue('kesa-repeat',true);
-			this.configurationObject["REPEAT_ON_CODE"] =this.getSelectedRadioValue('kesa-repeat')
+			this.configurationObject["REPEAT_ON_CODE"] =this.getSelectedRadioValue('kesa-repeat');
 			//populate file path
 			for(var i = 0; i < rates.length; i++){
 			    if(rates[i].checked){
+			    	//console.log("PATH WE::"+rates[i].value);
 			    	this.configurationObject["SERVER_FILE_PATH"] = rates[i].value;
 			    }
 			}
@@ -307,7 +329,15 @@ kesa.AdminPanelView.prototype={
 	        this.configurationObject["AMPM"] = amPm;	        
 			this.configurationObject["EMAIL"] = $("#kesaEmailIds").val();
 			this.configurationObject["EXTENSION"] = $("#kesaExtensionRadioList").val();
+			this.configurationObject["FILE_NAME"]= $("#kesaFileName").val();
+			
+			//TODO: HARDCODING FOR NOW
+			this.configurationObject["ENVIRONMENT_NAME"] ="production";     //$("#kesaEnvironmentRadioList").val();
+			this.configurationObject["TYPE_OF_REPORT"] ="sales";      //$("#kesaTypeOfReportRadioList").val();
+			
 			$("#configurationNotFilledMsg").html("");
+			
+			
 			
 			if(this.configurationObject["SERVER_FILE_PATH"] != undefined &&
 					this.configurationObject["TIME"] != undefined &&
@@ -315,26 +345,41 @@ kesa.AdminPanelView.prototype={
 					this.configurationObject["DATE"] != undefined &&
 					this.configurationObject["EXTENSION"] != undefined &&
 					this.configurationObject["EMAIL"] !=  undefined &&
+					this.configurationObject["ENVIRONMENT_NAME"]!= undefined && 
+					this.configurationObject["TYPE_OF_REPORT"]!= undefined &&
 					this.configurationObject["SERVER_FILE_PATH"] != "" && 
 					this.configurationObject["TIME"] != "" &&
 					this.configurationObject["AMPM"] != "" &&
 					this.configurationObject["DATE"] != "" &&
 					this.configurationObject["EXTENSION"] != "" &&
-					this.configurationObject["EMAIL"] != "" ){
+					this.configurationObject["EMAIL"] != "" &&
+					this.configurationObject["FILE_NAME"] != "" &&
+					this.configurationObject["ENVIRONMENT_NAME"]  != "" &&
+					this.configurationObject["TYPE_OF_REPORT"] != "" 
+				){
 				
 				
 				
+			//console.log("NEOZANT CONFIG EMAIL:::"+this.configurationObject["EMAIL"]);
 			
 				if(this.validateEmail(this.configurationObject["EMAIL"])){
 						this.processStep++;
 						this.renderProcessSteps();
-						console.log("CONFIGURATION OBJECT::");
-						console.log(this.configurationObject);
+						//console.log("CONFIGURATION OBJECT::");
+						//console.log(this.configurationObject);
 						$("#filePathConfirmation").html(this.configurationObject["SERVER_FILE_PATH"]);
+						$("#fileNameConfirmation").html(this.configurationObject["FILE_NAME"]);
+						
 						$("#dateConfirmation").html(this.configurationObject["DATE"]);
 						$("#timeConfirmation").html(this.configurationObject["TIME"] + this.configurationObject["AMPM"]);
 						$("#outputConfirmation").html(this.configurationObject["EXTENSION"]);
-						$("#emailsConfirmation").html(this.configurationObject["EMAIL"]);
+						$("#emailsConfirmation").html(this.configurationObject["EMAIL"]+","+this.configurationObject["RECIPIENT_ADDRESS"]);
+						
+						//TODO: REMOVING FOR NOW
+						//$("#environmentConfirmation").html(this.configurationObject["ENVIRONMENT_NAME"]);
+						//$("#typeOfReportConfirmation").html(this.configurationObject["TYPE_OF_REPORT"]);
+						
+						
 						$('#repeatConfirmation').hide();
 							$('#repeatConfirmation').show();
 							$('#repeatConfirmation').html(this.configurationObject["REPEAT_ON"]);
@@ -351,7 +396,7 @@ kesa.AdminPanelView.prototype={
 			
 		},
 		processStepPrevBtnClicked :function(){
-			console.log(this.processStep)
+			//console.log(this.processStep)
 			this.processStep--;
 			this.renderProcessSteps();
 			
@@ -366,7 +411,7 @@ kesa.AdminPanelView.prototype={
 				}
 			else{
 				
-				console.log("PROCESS NEXT BUTTON");
+				//console.log("PROCESS NEXT BUTTON");
 				this.getConfigData();//KV
 				
 					//this.getConfigData();
@@ -374,7 +419,151 @@ kesa.AdminPanelView.prototype={
 					//this.renderProcessSteps();
 				}
 		},
+		fetchDetailedView :function(evt){
+			//console.log("ID : "+$(evt.currentTarget).attr("m-data")	);
+			var recordId = $(evt.currentTarget).attr("m-data");
+			var eventName = $(evt.currentTarget).attr("m-event-id");
+			
+			if (recordId) {
+				this.serviceMgr.fetchedDetailedViewForId({uniqueId:recordId,eventName:eventName}, this.fetchedDetailsSucess.bind(this),this.fetchDetailsFailure.bind(this));	
+			}
+		},
+		deleteScheduleEvent :function(evt){
+			
+			//console.log("DELTED EVENT ID : "+$(evt.currentTarget).attr("m-del-id")+"|||",evt	);
+			var recordId = $(evt.currentTarget).attr("m-del-id");
+			var eventName = $(evt.currentTarget).attr("m-event-id");
+			
+			//console.log("DELTED EVENT ID : "+$(evt.currentTarget).attr("m-del-id")+"|||EVENT NAME:"+eventName);
+			if (recordId) {
+				this.serviceMgr.deleteScheduleEventTask({uniqueId:recordId,eventName:eventName}, this.deleteScheduleEventSucess.bind(this),this.deleteScheduleEventFailure.bind(this));	
+			}
+		},
+		deleteScheduleEventSucess :function(response){
+			//console.log("DELETE SCHEDULE EVENT::",response);
+			
+			$("#kesa-loader").hide();
+			if(response && response.responseStatus === "success"){
+				 
+				this.fetchAllRecordsClicked();
+				//$("#kesa-earlier-processdetails-tbody").empty();			
+				//this.createTablularDetailedUIBasedOnResponse(response);
+				//$("#myModal").modal();
+			}else{
+				$("#fetchTableResultMessage").html("Unable to delete Event");	
+			}
+		},
+		deleteScheduleEventFailure :function(){
+			$("#kesa-loader").hide();
+			$("#fetchTableResultMessage").html("unable to delete event");
+		},
+		fetchedDetailsSucess :function(response){
+			//console.log("FETCHDETAILS::",response);
+			
+			$("#kesa-loader").hide();
+			if(response && response.responseStatus === "success"){
+				$("#kesa-earlier-processdetails-tbody").empty();			
+				this.createTablularDetailedUIBasedOnResponse(response);
+				$("#myModal").modal();
+			}else{
+				$("#fetchTableResultMessage").html("unable to fetch record details");	
+			}
+		},
+		fetchDetailsFailure :function(){
+			$("#kesa-loader").hide();
+			$("#fetchTableResultMessage").html("unable to fetch record details");
+		},
+		fetchAllRecordsClicked :function(){
+			$("#kesa-earlier-process-tbody").empty();
+			this.serviceMgr.fetchAllRecords({}, this.fetchAllRecordsResponse.bind(this),this.fetchAllRecordsFailure.bind(this));
 		
+		},
+		fetchAllRecordsFailure :function(){
+			$("#kesa-loader").hide();
+			$("#fetchTableResultMessage").html("DB -Connectivity test failed..");
+		},
+		fetchAllRecordsResponse:function(response){
+			$("#kesa-loader").hide();
+			
+			
+			//console.log("NEOZANT RESPONSE:::",response);
+			
+			if(response && response.responseStatus === "success"){
+				this.createTablularUIBasedOnResponse(response);
+			}else{
+				$("#fetchTableResultMessage").html("FETCH RESPONSE ERROR.."+response.detailMessageOnFailure);
+			}
+		},
+		
+		createTablularUIBasedOnResponse :function(response){
+			if (response && response.scheduledEventObject) {
+				this.recordList = response.scheduledEventObject;
+				var s1 = '';
+				$("#kesa-earlier-process-tbody").empty();
+				/*for (var i = 0; i<response.records.length;i++){
+						s1 += '<tr>'
+						s1 += '<td>'+ response.records[i].id + '</td>'
+						s1 += '<td>'+ response.records[i].nameOfProcess + '</td>'
+						s1 += '<td>'+ response.records[i].fileToExecute + '</td>'
+						s1 += '<td>'+ response.records[i].dateTime + '</td>'
+						s1 += '<td>'+ response.records[i].outputFormat + '</td>'
+						s1 += '<td>'+ response.records[i].mode + '</td>'
+						s1 += '<td>'+ response.records[i].emailList + '</td>'
+						s1 += '<td>'+ response.records[i].status + '</td>'
+						s1 += '<td> <input type="submit" value="View"  class="kesa-records-detailedView" m-data="'+response.records[i].id+'"> </td>'
+						s1 += '</tr>'
+				}*/
+				for (var i = 0; i<response.scheduledEventObject.length;i++){
+					s1 += '<tr>';
+					s1 += '<td>'+ (i+1)+ '</td>';
+					s1 += '<td>'+ response.scheduledEventObject[i].nameOfScheduledTask + '</td>';
+					s1 += '<td>'+ response.scheduledEventObject[i].fileToExecute + '</td>';
+					s1 += '<td>'+ response.scheduledEventObject[i].dateAndTimeInString + '</td>';
+					s1 += '<td>'+ response.scheduledEventObject[i].outputFileFormat + '</td>';
+					s1 += '<td>'+ response.scheduledEventObject[i].timerRepeatOn + '</td>';
+					s1 += '<td>'+ response.scheduledEventObject[i].recipientAddress + '</td>';
+					s1 += '<td>'+ response.scheduledEventObject[i].status + '</td>';
+					//s1 += '<td>'+ response.scheduledEventObject[i].environmentName + '</td>';
+					//s1 += '<td>'+ response.scheduledEventObject[i].typeOfReport + '</td>';
+					s1 += '<td> <input type="submit" value="View"  class="kesa-records-detailedView" m-data="'+response.scheduledEventObject[i].uniqueId+'"m-event-id="'+response.scheduledEventObject[i].nameOfScheduledTask+'"> </td>';
+					s1 += '<td> <input type="submit" value="Delete"  class="kesa-records-deleteEvent" m-del-id="'+response.scheduledEventObject[i].uniqueId+'"m-event-id="'+response.scheduledEventObject[i].nameOfScheduledTask+'"> </td>';
+					s1 += '</tr>';
+			}
+				
+								
+				$(".kesa-records-detailedView").off("click",this.fetchDetailedView.bind(this));
+				
+				$(".kesa-records-deleteEvent").off("click",this.deleteScheduleEvent.bind(this));
+				
+				$("#kesa-earlier-process-tbody").append(s1);
+				$(".kesa-records-detailedView").on("click",this.fetchDetailedView.bind(this));
+				$(".kesa-records-deleteEvent").on("click",this.deleteScheduleEvent.bind(this));
+			}
+		},
+		createTablularDetailedUIBasedOnResponse :function(response){
+			
+			//console.log("FETCHDETAILS:::",response);
+			//listOfDetailScheduledObject
+			if (response && response.listOfDetailScheduledObject) {
+				this.recordList = response.listOfDetailScheduledObject;
+				var s1 = '';
+				$("#kesa-earlier-processdetails-tbody").empty();
+				for (var i = 0; i<response.listOfDetailScheduledObject.length;i++){
+						s1 += '<tr>';
+						s1 += '<td>'+ (i+1) + '</td>';
+						s1 += '<td>'+ response.listOfDetailScheduledObject[i].executedTime + '</td>';
+						s1 += '<td>'+ response.listOfDetailScheduledObject[i].result + '</td>';
+						//s1 += '<td>'+ response.listOfDetailScheduledObject[i].outputFormat + '</td>';
+						s1 += '<td>'+ response.listOfDetailScheduledObject[i].ouputFileName + '</td>';
+						s1 += '<td>'+ response.listOfDetailScheduledObject[i].emailStatus + '</td>';
+						//s1 += '<td>'+ response.listOfDetailScheduledObject[i].ftpStatus + '</td>';
+						s1 += '</tr>';
+				}
+				$("#kesa-earlier-processdetails-tbody").append(s1);
+			}
+		},
+
+
 		testConnectivity:function(){
 			this.serviceMgr.triggerConnectivity({}, this.onConnectivityResponse.bind(this),this.onConnectivityFailure.bind(this));
 			//this.onConnectivityResponse();
@@ -386,8 +575,8 @@ kesa.AdminPanelView.prototype={
 		onConnectivityResponse:function(response){
 			$("#kesa-loader").hide();
 			
-			console.log("TEST DB CONNECTIVITY:::");
-			console.log(response);
+			//console.log("TEST DB CONNECTIVITY:::");
+			//console.log(response);
 			if(response.responseStatus === "success"){
 				$("#kesaTestConnectionBtn").hide();
 				$("#connectionResultMessage").html("DB -Connected successfully..");
@@ -414,29 +603,59 @@ kesa.AdminPanelView.prototype={
 		},
 		onConfigResponse:function(response){
 			$("#kesa-loader").hide();
-			console.log("CONFIG RESPONSE:::");
-			console.log(response);
+			//console.log("CONFIG RESPONSE:::");
+			//console.log(response);
 			
-			this.processStep++; //KV
-			this.renderProcessSteps();
-			
-			
-			this.onfileNamesFetchedResponse(response.listOfSourceFiles);
-			/*if(response.responseStatus === "success"){
+			if(response.responseStatus === "success"){
 				
-				this.processStep = 2;
+				this.processStep++; //KV
 				this.renderProcessSteps();
-				//$("#kesaTestConnectionBtn").removeClass(this.hideMeClassIdentifier);
 				
+				this.onfileNamesFetchedResponse(response.listOfSourceFiles);
+				
+				$("#kesaEmailIds").val(response.recipientAddress);//=response.recipientAddress;
 			}else{
-				this.onConnectivityFailure();
-			}*/
+				
+				$("#kesa-loader").hide();
+				$("#connectionResultMessage").html(response.detailMessageOnFailure);
+				
+				//this.onConnectivityFailure();
+				
+			}
 			
 		},
 		
 		validateEmail:function (emailAddress) {
+			var self = this;
             var regularExpression = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))){2,6}$/i;
-             return regularExpression.test(emailAddress);
+            
+            var emails = emailAddress.split(",");
+            //console.log("emails ------- ", emails);
+            var emailArray = [];
+            var isEmailValid = true;
+            $.each(emails, function(key, value) { 
+            	//console.log("key :: "+key);
+            	if(isEmailValid){
+            		value = value.trim();
+            		if(key ==0){
+            			self.configurationObject["EMAIL"]=value;
+            		}else{
+            			emailArray.push(value);
+            		}
+            		var result = regularExpression.test(value);
+            		
+            		 if(!result){
+            			 isEmailValid = result;
+                 	}
+            	}     	
+            });
+       
+            this.configurationObject["RECIPIENT_ADDRESS"]=emailArray;
+            //this.configurationObject["EMAIL"]=emailAddress;
+           //console.log("array : ", emailArray);
+            return isEmailValid;
+
+           // return regularExpression.test(emailAddress);
         },//KV
 		
 		
@@ -446,7 +665,8 @@ kesa.AdminPanelView.prototype={
 			$("#kesaConfigDate").val("");
 			$("#kesaConfigTime").val("");
 			$("#kesaEmailIds").val("");
-			//$("#kesaServerURL").val("");
+			
+			$("#kesaFileName").val("");
 			
 			this.pageVisibilityState =2 ;
 			this.showPageAsPerState();
@@ -459,12 +679,15 @@ kesa.AdminPanelView.prototype={
 					this.pageVisibilityState =3 ;
 					this.showPageAsPerState();
 					break;
+				case "kesa_dashboard_02":
+					this.pageVisibilityState =4 ;
+					this.showPageAsPerState();
 			}
 		},
 		loginClicked:function(){
-			$("#kesaLoginValidationMsg").html("")
+			$("#kesaLoginValidationMsg").html("");
 			if($("#kesaUserName").val() === "" || $("#kesaPassword").val() === ""){
-				$("#kesaLoginValidationMsg").html(" Please verify username & password ")
+				$("#kesaLoginValidationMsg").html(" Please verify username & password ");
 				return;
 			}
 			else{
@@ -486,23 +709,24 @@ kesa.AdminPanelView.prototype={
 		onLoginResponse:function(response){
 			$("#kesa-loader").hide();
 			
-			console.log(response.responseStatus);
+			//console.log(response.responseStatus);
 			if(response.responseStatus=== "success"){
 				this.pageVisibilityState =2 ;
 				this.showPageAsPerState();
 			}else{
-				console.log("KESA:: LOGIN ERROR::"+response.detailMessageOnFailure);
+				//console.log("KESA:: LOGIN ERROR::"+response.detailMessageOnFailure);
 				this.loginError();
 			}
 		}
-}
+};
+
 
 
 
 
 kesa.AdminPanelServiceLayer = function(){
 	
-}
+};
 
 kesa.AdminPanelServiceLayer.prototype={
 		triggerLogin :function(data,loginCallBack,loginCallBackError){
@@ -513,31 +737,179 @@ kesa.AdminPanelServiceLayer.prototype={
 					"role": "admin",
 					"password": "1978"
 			}*/
-			$.ajax({
-				url:"neozant/user/login",
-				type:"POST",
-				contentType: "application/json; charset=utf-8",
-			    data : JSON.stringify(data),
-				success:loginCallBack,
-				error:loginCallBackError,
-				timeout:loginCallBackError
-			});
+			if (!SIMULATE_BACKEND)	 {
+				$.ajax({
+					url:"neozant/user/login",
+					type:"POST",
+					contentType: "application/json; charset=utf-8",
+				    data : JSON.stringify(data),
+					success:loginCallBack,
+					error:loginCallBackError,
+					timeout:loginCallBackError
+				});	
+			}
+			else {
+				loginCallBack({
+					responseStatus:'success'
+				});
+			}
+			
 		},
 		triggerConnectivity:function(data,connectivityCallBack,connectivityCallBackError){
 			$("#kesa-loader").show();
+			if (!SIMULATE_BACKEND)	 {
+				$.ajax({
+					url:"neozant/schedule/testDbConnection",
+					contentType: "application/json; charset=utf-8",
+				    data : JSON.stringify(data),
+					type:"GET",
+					success:connectivityCallBack,
+					error:connectivityCallBackError,
+					timeout:connectivityCallBackError
+					
+				});
+			}
+			else {
+				connectivityCallBack({
+					responseStatus:'success'
+				});
+			}
+		},
+		fetchAllRecords :function(data,configCallBack,configCallBackError){
+			$("#kesa-loader").show();
+			if (!SIMULATE_BACKEND)	 {
+				$.ajax({
+					url:"neozant/schedule/getScheduledEvents",
+					contentType: "application/json; charset=utf-8",
+				    data : JSON.stringify(data),
+					type:"GET",
+					success:configCallBack,
+					error:configCallBackError,
+					timeout:configCallBackError
+					
+				});
+			}
+			else {
+				var jsonResponse = {
+					responseStatus:"success",
+					records:[//PRADEEP PATIL, AURANGABAD KOLTE PATIL
+						{
+							"id":"1",
+							"nameOfProcess":"X1",
+							"fileToExecute":"X1/asbc.txt",
+							"dateTime":"",
+							"outputFormat":"xls",
+							"mode":"EVERYDAY",
+							"emailList":"abc@a.com,aaa@a.com",
+							"status":"Completed"
+						},
+						{
+							"id":"2",
+							"nameOfProcess":"X1",
+							"fileToExecute":"X1/asbc.txt",
+							"dateTime":"",
+							"outputFormat":"xls",
+							"mode":"EVERYDAY",
+							"emailList":"abc@a.com,aaa@a.com",
+							"status":"Completed"
+						},
+						{
+							"id":"3",
+							"nameOfProcess":"X1",
+							"fileToExecute":"X1/asbc.txt",
+							"dateTime":"",
+							"outputFormat":"xls",
+							"mode":"EVERYDAY",
+							"emailList":"abc@a.com,aaa@a.com",
+							"status":"Completed"
+						}
+
+					]
+				};
+				configCallBack(jsonResponse);
+			}
+
+		},
+		fetchedDetailedViewForId :function(data,configCallBack,configCallBackError){
+			$("#kesa-loader").show();
+			if (!SIMULATE_BACKEND)	 {
 			$.ajax({
-				url:"neozant/schedule/testDbConnection",
+				url:"neozant/schedule/getScheduledEventDetails",
 				contentType: "application/json; charset=utf-8",
 			    data : JSON.stringify(data),
-				type:"GET",
-				success:connectivityCallBack,
-				error:connectivityCallBackError,
-				timeout:connectivityCallBackError
+				type:"POST",
+				success:configCallBack,
+				error:configCallBackError,
+				timeout:configCallBackError
 				
 			});
+		}
+		else {
+			var jsonResponse = {
+					responseStatus:"success",
+					records:[
+						{
+							"id":"1",
+							"executedTime":"Execute Time",
+							"result":"Result",
+							"outputFormat":"xls",
+							"outputFileName":"abc.txt",
+							"emailStatus":"abc@a.com,aaa@a.com"
+						},{
+							"id":"2",
+							"executedTime":"Execute Time",
+							"result":"Result",
+							"outputFormat":"xls",
+							"outputFileName":"abc.txt",
+							"emailStatus":"abc@a.com,aaa@a.com"
+						},
+						{
+							"id":"3",
+							"executedTime":"Execute Time",
+							"result":"Result",
+							"outputFormat":"xls",
+							"outputFileName":"abc.txt",
+							"emailStatus":"abc@a.com,aaa@a.com"
+						},
+						{
+							"id":"4",
+							"executedTime":"Execute Time",
+							"result":"Result",
+							"outputFormat":"xls",
+							"outputFileName":"abc.txt",
+							"emailStatus":"abc@a.com,aaa@a.com"
+						},
+
+					]
+				};
+
+				configCallBack(jsonResponse);
+		}
+			
+		},
+		deleteScheduleEventTask:function(data,configCallBack,configCallBackError){
+			$("#kesa-loader").show();
+			if (!SIMULATE_BACKEND)	 {
+			$.ajax({
+				url:"neozant/schedule/deleteScheduledEvent",
+				contentType: "application/json; charset=utf-8",
+			    data : JSON.stringify(data),
+				type:"POST",
+				success:configCallBack,
+				error:configCallBackError,
+				timeout:configCallBackError
+				
+			});
+		}
+		else {
+			var jsonResponse = {"recipientAddress":["rvaijapure@lao.ten.fujitsu.com"],"listOfSourceFiles":["C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\Deleted _TDC_ONHAND_INVENTORY.sql","C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\EBS USERS REPORT FOR KOBAYASHI.sql","C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\ITAC_Sales_query.sql","C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\TDC_onhand.sql","C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\TDC_ONHAND_INVENTORY.sql"],"outputFilePath":"C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\DESTINATION_DIRECTORY","sourceFilePath":"C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY","fileFormatSupported":["xls","csv"],"detailMessageOnFailure":null,"responseStatus":"success"};
+			configCallBack(jsonResponse);
+		}
+			
 		},
 		triggerGetConfigData:function(data,configCallBack,configCallBackError){
 			$("#kesa-loader").show();
+			if (!SIMULATE_BACKEND)	 {
 			$.ajax({
 				url:"neozant/schedule/getConfigData",
 				contentType: "application/json; charset=utf-8",
@@ -548,12 +920,18 @@ kesa.AdminPanelServiceLayer.prototype={
 				timeout:configCallBackError
 				
 			});
+		}
+		else {
+			var jsonResponse = {"recipientAddress":["rvaijapure@lao.ten.fujitsu.com"],"listOfSourceFiles":["C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\Deleted _TDC_ONHAND_INVENTORY.sql","C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\EBS USERS REPORT FOR KOBAYASHI.sql","C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\ITAC_Sales_query.sql","C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\TDC_onhand.sql","C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\TDC_ONHAND_INVENTORY.sql"],"outputFilePath":"C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\DESTINATION_DIRECTORY","sourceFilePath":"C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY","fileFormatSupported":["xls","csv"],"detailMessageOnFailure":null,"responseStatus":"success"};
+			configCallBack(jsonResponse);
+		}
+			
 		},
 		
 		triggerConfigSubmission:function(data,submissionCallBack,submissionCallBackError){
 			$("#kesa-loader").show();
 			$.ajax({
-				url:"neozant/schedule/event",
+				url:"neozant/schedule/triggerEvent",
 				contentType: "application/json; charset=utf-8",
 			    data : JSON.stringify(data),
 				type:"POST",
@@ -564,22 +942,24 @@ kesa.AdminPanelServiceLayer.prototype={
 			});
 		}
 		
-}
+};
+
+
 
 
 kesa.AdminPanelController= function(){
 	this.viewMgr ;
 	this.createViewInstance();
 	
-}  
+};  
 
 
 kesa.AdminPanelController.prototype={
 		
 		createViewInstance :function(){
-			console.log("view Instance");
+			//console.log("view Instance");
 			viewMgr = new kesa.AdminPanelView();
 			viewMgr.onAppLoaded();
 		},
 		
-}
+};

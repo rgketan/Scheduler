@@ -20,6 +20,7 @@ import javax.mail.internet.MimeMultipart;
 
 import com.neozant.bean.EmailContent;
 import com.neozant.enums.EnumConstants;
+import com.neozant.helper.ServerHelper;
 import com.neozant.mail.EmailAttachmentSender;
 import com.neozant.request.ScheduleDataRequest;
 import com.neozant.request.TimerData;
@@ -32,9 +33,24 @@ public class TestingPurpose {
 		TestingPurpose testing=new TestingPurpose();
 		
 		
-		testing.testEmail();
+		testing.testWritingExcel();
 	}
 	
+	
+	private void testWritingExcel(){
+		
+		ScheduleDataRequest scheduleData=getScheduleData();
+		try {
+			ServerHelper helper=ServerHelper.getServerHelperObject();
+			helper.perfomAction(scheduleData);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
 	
 	private void testEmail(){
 		
@@ -49,7 +65,7 @@ public class TestingPurpose {
 		emailContent.setPassword("ftcamis");
 		
 		emailContent.setToAddress(schedule.getToEmailId());
-		emailContent.setMulipleAddress(schedule.getMulipleAddress());
+		emailContent.setMulipleAddress(schedule.getRecipientAddress());
 		
 		emailContent.setSubject("FU");
 		emailContent.setMessage("FU MESSAGE");
@@ -83,8 +99,10 @@ private ScheduleDataRequest getScheduleData(){
 		
 		timerData.setAmPmMarker(EnumConstants.AMMARKER.getConstantType());
 		
-		String sqlFilePath="/Volumes/DATA/WORK/NEOZANT/EBSSqlReports/Testing.sql";
+		//String sqlFilePath="/Volumes/DATA/WORK/NEOZANT/EBSSqlReports/Testing.sql";
 	    
+		String sqlFilePath="C:\\Users\\Ketan\\Desktop\\SCHEDULER_RELATED\\SOURCE_DIRECTORY\\TDC_ONHAND_INVENTORY.sql";
+		
 		/*final String value = System.getenv("HOME");
 		 System.out.println(value);
 		 File f1 = new File(value);
@@ -102,7 +120,7 @@ private ScheduleDataRequest getScheduleData(){
 		mulipleAddress.add("steamtechnics@gmail.com");
 		mulipleAddress.add("jija.1987@gmail.com");
 		
-		scheduleData.setMulipleAddress(mulipleAddress);
+		scheduleData.setRecipientAddress(mulipleAddress);
 		
 		
 		

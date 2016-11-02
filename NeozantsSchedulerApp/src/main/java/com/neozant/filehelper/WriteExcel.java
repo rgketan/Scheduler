@@ -2,14 +2,15 @@ package com.neozant.filehelper;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.ResultSetMetaData;
+import java.sql.Types;
 import java.util.Locale;
 
 import jxl.CellView;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
-import jxl.format.UnderlineStyle;
 import jxl.write.Label;
+import jxl.write.Number;
 import jxl.write.WritableCellFormat;
 import jxl.write.WritableFont;
 import jxl.write.WritableSheet;
@@ -25,6 +26,8 @@ import com.neozant.interfaces.IFileWriter;
 public class WriteExcel implements IFileWriter{
 
 	final static Logger logger = Logger.getLogger(WriteExcel.class);
+
+	//private static final String DEFAULT_NUMBER_FORMAT = null;
 	
 	private WritableCellFormat timesBoldUnderline;
 	private WritableCellFormat times;
@@ -60,20 +63,23 @@ public class WriteExcel implements IFileWriter{
 		// Define the cell format
 		times = new WritableCellFormat(times10pt);
 		// Lets automatically wrap the cells
-		times.setWrap(true);
+		//times.setWrap(true);
 
 		// create create a bold font with unterlines
-		WritableFont times10ptBoldUnderline = new WritableFont(
-				WritableFont.TIMES, 10, WritableFont.BOLD, false,
-				UnderlineStyle.SINGLE);
+		WritableFont times10ptBoldUnderline = new WritableFont(WritableFont.TIMES, 11);
+				//WritableFont.TIMES, 10, WritableFont.BOLD, false,
+				//UnderlineStyle.SINGLE);
+				times10ptBoldUnderline.setBoldStyle(WritableFont.BOLD);
+				
+						
 		timesBoldUnderline = new WritableCellFormat(times10ptBoldUnderline);
 		// Lets automatically wrap the cells
-		timesBoldUnderline.setWrap(true);
+		//timesBoldUnderline.setWrap(true);
 
-		CellView cv = new CellView();
-		cv.setFormat(times);
-		cv.setFormat(timesBoldUnderline);
-		cv.setAutosize(true);
+		//CellView cv = new CellView();
+		//cv.setFormat(times);
+		//cv.setFormat(timesBoldUnderline);
+		//cv.setAutosize(true);
 
 		// Write a few headers
 
@@ -92,12 +98,38 @@ public class WriteExcel implements IFileWriter{
 			//POPULATE CONTENT
 			int rowNumber = 1;
 			while (rs.next()) {
+				ResultSetMetaData rsmd = rs.getMetaData();
+				
 				for (int i = 1; i <= colunmCount; i++) {
 
+					int type = rsmd.getColumnType(i);
+					
 					if (rs.getObject(i) != null) {
-						 String data= rs.getObject(i).toString();
-						// System.out.println("WriteExcel:: DATA WE GET IS:"+data);
-						addLabel(sheet, i - 1, rowNumber, data);
+						//System.out.println("*****TYPE WE GET IS::::"+type);
+						
+						if (type == Types.INTEGER || type == Types.NUMERIC 
+						    || type == Types.BIGINT || type == Types.DECIMAL ) {
+			                //out.print(rs.getString(i));
+							// float value=rs.getFloat(i);
+							
+							 double value=rs.getDouble(i);
+							 
+							 //System.out.println("*****VALUE OF NUMBER WE GET::::"+value);
+			            	 addNumber(sheet, i - 1, rowNumber, value);
+			            	 /*if(i-1 == 7)
+			            	 logger.info("ITS A NUMBER: "+value+"||STRING :"+rs.getObject(i).toString());*/
+							
+			            } else {
+			            	//logger.info("ITS A STRING");
+			                //out.print(rs.getLong(i));
+			            	 String data= rs.getObject(i).toString();
+			            	 
+			            	// System.out.println("*****VALUE OF STRING WE GET::::"+data);
+							 addLabel(sheet, i - 1, rowNumber, data);
+			            }
+						
+						
+						
 					}
 				}
 
@@ -105,8 +137,11 @@ public class WriteExcel implements IFileWriter{
 
 			}
 
-		} catch (SQLException e) {
+			logger.info("WriteExcel:: DATA ENTERED INTO EXCEL SHEET FOR RESULTSET:");
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			
+			logger.error("WriteExcel::ERROR WHILE WRITING RESULTSET TO EXCEL SHEET");
 			e.printStackTrace();
 		}
 
@@ -143,16 +178,47 @@ public class WriteExcel implements IFileWriter{
 			throws RowsExceededException, WriteException {
 		Label label;
 		label = new Label(column, row, s, timesBoldUnderline);
+		
 		sheet.addCell(label);
+		
+		//sheet.setColumnView(column, s.length());
+		
+		// Cell[] cell =sheet.getColumn(column);
+		 
+		 
 	}
 
 	private void addLabel(WritableSheet sheet, int column, int row, String s)
 			throws WriteException, RowsExceededException {
 		Label label;
 		label = new Label(column, row, s, times);
+		/*NumberFormat decimalNo = new NumberFormat("#.0"); 
+		NumberFormat nf = new NumberFormat(DEFAULT_NUMBER_FORMAT);
+		WritableCellFormat numberFormat = new WritableCellFormat();
+		//write to datasheet
+		//Number numberCell = new Number(c, r, val, st)
+		label.setCellFormat(cf);
+		cell.setFormat(numberFormat);
+		*/
 		sheet.addCell(label);
+		CellView cell = sheet.getColumnView(column);
+		cell.setAutosize(true);
+        sheet.setColumnView(column, cell);
 	}
 	
+	
+	private void addNumber(WritableSheet sheet, int column, int row,
+			double value) throws WriteException, RowsExceededException {
+			
+			
+		    Number number;
+		    number = new Number(column, row, value, times);
+		    sheet.addCell(number);
+		    
+		    CellView cell = sheet.getColumnView(column);
+		    cell.setAutosize(true);
+	        sheet.setColumnView(column, cell);
+	}
 	
 	
 

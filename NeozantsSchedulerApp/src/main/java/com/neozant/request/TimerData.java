@@ -108,6 +108,16 @@ public class TimerData {
 	}
 
 
+	public String toString(){
+		String dateInString = this.getDate() + ":"
+				+ this.getMonth() + ":" 
+				+ this.getYear()  + "," 
+				+ this.getHour() + ":"
+				+ this.getMinutes() + ":00"
+				+ ":"+this.getAmPmMarker();
+		
+		return dateInString;
+	}
 	
 
 }
