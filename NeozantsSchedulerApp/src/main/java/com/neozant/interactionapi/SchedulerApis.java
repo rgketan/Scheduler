@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import com.neozant.helper.DataStorageHelper;
 import com.neozant.helper.ServerHelper;
 import com.neozant.interfaces.IMessageValidator;
+import com.neozant.request.FtpRequest;
 import com.neozant.request.ScheduleDataRequest;
 import com.neozant.request.ScheduleEventDetailsRequest;
 import com.neozant.response.ConfigurationResponse;
@@ -137,6 +138,7 @@ public class SchedulerApis {
 			schedulerResponse.setResponseStatus("failure");
 		}
 		
+		schedulerResponse.setResponseStatus("success");
 		return schedulerResponse;
 	}
 	
@@ -274,6 +276,24 @@ public class SchedulerApis {
 		return deleteScheduleResponse;
 	}
 	
+	
+	
+	
+	//TEST DATABASE CONNECTIVITY
+		@Path("/testFtpConnection")
+		@GET
+		@Produces(MediaType.APPLICATION_JSON)
+		public SchedulerResponse ftpConnectivity(FtpRequest ftpRequest){
+			
+			SchedulerResponse schedulerResponse=new SchedulerResponse();
+			Connection conn=null;
+			
+			
+			schedulerResponse.setResponseStatus("success");
+			return schedulerResponse;
+		}
+		
+		
 	public static void main(String[] args) {
 		
 		//SchedulerApis sch=new SchedulerApis();
