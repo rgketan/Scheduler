@@ -148,7 +148,7 @@ public class TimerTaskManager {
 					break;
 				case WEEKDAY:
 					logger.info("TimerTaskManager::SCHEDULING FOR WEEKDAY TIMER");
-					String expressionForWeekdayTimer="0 "+minutes+" "+hours+" ? * MON-SAT";
+					String expressionForWeekdayTimer="0 "+minutes+" "+hours+" ? * MON-FRI";
 					jobTrigger= TriggerBuilder.newTrigger()
 							    .withIdentity(trigID.toString(), this.apiServiceGroupID)
 							    .startAt(date)
