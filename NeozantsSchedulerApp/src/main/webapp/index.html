@@ -201,13 +201,6 @@
 						</select>
 					</div>
 					-->
-					
-					
-					<div class="row" >
-							<label> Enter Email Address :</label>
-							<!-- input type="email" id="kesaEmailIds"--> 
-							<textarea rows="4" cols="40" id="kesaEmailIds"></textarea>
-					</div>
 					<br>
 					<div class="row" >
 							<div><label> Repeat for below  :</label></div>
@@ -226,9 +219,33 @@
  							 <input type="checkbox" name="kesa-day" value="5_FRI" >FRIDAY<br>
  							 <input type="checkbox" name="kesa-day" value="6_SAT" >SATURDAY<br>
  							  -->
- 							
+					</div>
+					<br>
+					<div class="row" >
+						<label> Select type  :</label> 
+						<input class="radio-button-ftp" type="radio" name="kesa-repeat-type" value="email" kesa-data="EMAIL" checked="checked">Email
+ 						<input class="radio-button-ftp" type="radio" name="kesa-repeat-type" value="ftp" kesa-data="FTP">FTP<br>
 					</div>
 					
+					<div class="row" id="emailWrapper">
+							<label> Enter Email Address :</label>
+							<!-- input type="email" id="kesaEmailIds"-->
+							<textarea rows="4" cols="40" id="kesaEmailIds"></textarea>
+					</div>
+					
+					<div class="row" id="ftpWrapper">
+							<label> Enter FTP Host :</label>
+							<input type="text" id="kesaFtpHost" size="40"><br>
+							<label> Enter FTP User Name :</label>
+							<input type="text" id="kesaFtpUserName"><br>
+							<label> Enter FTP Password :</label>
+							<input type="text" id="kesaFtpPassword"><br>
+							<label> Enter FTP Path :</label>
+							<input type="text" id="kesaFtpPath" size="40"><br>
+							<button type="button" class="btn btn-default" id="kesaTestFTPConnectionBtn">
+								<i class="fa fa-chevron-left"></i> Check FTP Connection
+							</button>
+					</div>
 					
 				</div>
 				<div id="menu3" class="tab-pane fade in ">

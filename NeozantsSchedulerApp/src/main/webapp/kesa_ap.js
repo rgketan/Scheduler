@@ -67,6 +67,16 @@ kesa.AdminPanelView = function(){
 			"TYPE_OF_REPORT":""
 			
 	};
+	
+	this.ftpObject={
+		     "ftpHost":"",
+			 "ftpUsername":"",
+			 "ftpPassword":"",
+			 "ftpFilePath":""		
+	};
+	
+	
+	///testFtpConnection
 	this.recordList =[];
 	
 };	
@@ -179,6 +189,19 @@ kesa.AdminPanelView.prototype={
 			
 			
 			//$("#kesaFetchFileList").on("click",this.fetchFileListClicked.bind(this));//KV
+			
+			$('input:radio[name=kesa-repeat-type]').change(function() {
+		        if (this.value == 'email') {
+		            $("#ftpWrapper").hide();
+		            $("#emailWrapper").show();
+		        }
+		        else if (this.value == 'ftp') {
+		            $("#emailWrapper").hide();
+		            $("#ftpWrapper").show();
+		        }
+		    });
+			
+			$("#kesaTestFTPConnectionBtn").on("click",this.testFTPConnectivity.bind(this));
 			
 		},
 		processStepDoneBtnClicked :function(){
