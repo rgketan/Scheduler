@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 
 import com.neozant.helper.DataStorageHelper;
+import com.neozant.helper.FtpServerHelper;
 import com.neozant.helper.ServerHelper;
 import com.neozant.interfaces.IMessageValidator;
 import com.neozant.request.FtpRequest;
@@ -118,7 +119,7 @@ public class SchedulerApis {
 	public SchedulerResponse databaseConnectivity(){
 		
 		SchedulerResponse schedulerResponse=new SchedulerResponse();
-		Connection conn=null;
+		/*Connection conn=null;
 		
 		try{
 			ServerHelper helper=ServerHelper.getServerHelperObject();
@@ -136,7 +137,7 @@ public class SchedulerApis {
 			
 			//schedulerResponse.setDetailMessageOnFailure("Could not establish the connection with D/B");
 			schedulerResponse.setResponseStatus("failure");
-		}
+		}*/
 		
 		schedulerResponse.setResponseStatus("success");
 		return schedulerResponse;
@@ -279,17 +280,25 @@ public class SchedulerApis {
 	
 	
 	
-	//TEST DATABASE CONNECTIVITY
+	//TEST FTP CONNECTIVITY
 		@Path("/testFtpConnection")
-		@GET
+		@POST
 		@Produces(MediaType.APPLICATION_JSON)
 		public SchedulerResponse ftpConnectivity(FtpRequest ftpRequest){
 			
+			String successFlag = "success";
 			SchedulerResponse schedulerResponse=new SchedulerResponse();
-			Connection conn=null;
 			
+			FtpServerHelper ftpServerHelper=new FtpServerHelper();
 			
-			schedulerResponse.setResponseStatus("success");
+			boolean connectionFlag=ftpServerHelper.checkFtpConnectivity(ftpRequest);
+			
+			System.out.println("TEST FTP CONNECTIVITY FLAG WE GET IS::"+connectionFlag);
+			
+			if(!connectionFlag){
+				successFlag = "failure";
+			}
+			schedulerResponse.setResponseStatus(successFlag);
 			return schedulerResponse;
 		}
 		

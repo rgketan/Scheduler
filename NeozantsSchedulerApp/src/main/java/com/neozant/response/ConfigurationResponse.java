@@ -3,6 +3,8 @@ package com.neozant.response;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.neozant.request.FtpRequest;
+
 public class ConfigurationResponse extends GenericResponse{
 
 	private ArrayList<String> listOfSourceFiles;
@@ -10,7 +12,7 @@ public class ConfigurationResponse extends GenericResponse{
 	private String sourceFilePath;
 	private ArrayList<String> fileFormatSupported;
 	private List<String> recipientAddress;
-	
+	private FtpRequest ftpRequest;
 
 	public ConfigurationResponse() {
 
@@ -64,6 +66,14 @@ public class ConfigurationResponse extends GenericResponse{
 
 	public void setRecipientAddress(List<String> arrayList) {
 		this.recipientAddress = arrayList;
+	}
+
+	public FtpRequest getFtpRequest() {
+		return ftpRequest;
+	}
+
+	public void setFtpRequest(FtpRequest ftpRequest) {
+		this.ftpRequest = ftpRequest;
 	}
 
 	

@@ -12,6 +12,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
 
 import com.neozant.enums.EnumConstants;
+import com.neozant.request.FtpRequest;
 
 
 public class FtpServerHelper {
@@ -51,6 +52,7 @@ public class FtpServerHelper {
 				client.setFileType(FTP.BINARY_FILE_TYPE);
 				client.changeWorkingDirectory(directoryToUploadFile);
 
+				
 				File file = new File(fileToUpload);
 				String fileName = file.getName();
 
@@ -129,4 +131,43 @@ public class FtpServerHelper {
 		return uploadPath;
 	}
 	
+	
+	
+	public boolean checkFtpConnectivity(FtpRequest ftpRequest){
+		boolean connectionFlag=true;
+		
+		try{
+		FTPClient client = new FTPClient();
+		client.connect(ftpRequest.getFtpHost());
+
+		boolean loginFlag = client.login(ftpRequest.getFtpUsername(),ftpRequest.getFtpPassword());
+
+		if (loginFlag) {
+			System.out.println("logged in successfully");
+			logger.info("FtpServerHelper:: LOGGED IN SUCCESSFULLY");
+
+			client.setFileType(FTP.BINARY_FILE_TYPE);
+			client.changeWorkingDirectory(ftpRequest.getFtpFilePath());
+			
+		}else{
+			connectionFlag=false;
+			logger.error("FtpServerHelper:: ERROR CONNECTING TO FTP SERVER::LOGIN FLAG :"+loginFlag);
+		}
+		
+		
+		if(client.getReplyCode()!=250){
+			logger.error("FtpServerHelper:: ERROR CONNECTING TO FTP SERVER REASON::"+client.getReplyString());
+			connectionFlag=false;
+		}
+		System.out.println("FOR DEBUG POINT");
+		
+		}catch(Exception ex){
+			connectionFlag=false;
+			logger.error("FtpServerHelper:: ERROR WHILE CONNECTING TO FTP SERVER::"+ex.getMessage());
+			ex.printStackTrace();
+		}
+		
+		
+		return connectionFlag;
+	}
 }

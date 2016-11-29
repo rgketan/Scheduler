@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import com.neozant.dbconnectivity.GetDbConnection;
 import com.neozant.enums.EnumConstants;
 import com.neozant.filehelper.FileHelper;
+import com.neozant.request.FtpRequest;
 import com.neozant.request.ScheduleDataRequest;
 import com.neozant.request.TimerData;
 import com.neozant.response.ConfigurationResponse;
@@ -205,14 +206,14 @@ public class ServerHelper {
 			
 			
 			String listOfRecipients=readKeyValueFromPropertyFile(EnumConstants.EMAILPROPERTYFILE.getConstantType(),"recipientAddress");
+			
+			
 			String[] recipients=listOfRecipients.split(",");
 			
 			List<String> arrayList = new ArrayList<String>(); 
 			Collections.addAll(arrayList, recipients); 
 			
 			config.setRecipientAddress(arrayList);
-			
-			
 			
 			ArrayList<String> listOfSourceFile=new ArrayList<String>();
 			File f1 = new File(sourceDirectory);
@@ -223,6 +224,22 @@ public class ServerHelper {
 				 logger.info("SOURCE FILE PATH WE GET::"+file.getAbsolutePath());
 			 }
 			config.setListOfSourceFiles(listOfSourceFile);
+			
+			
+			String ftphost=readKeyValueFromPropertyFile(EnumConstants.FTPPROPERTYFILE.getConstantType(),"ftphost"),
+					   ftpusername=readKeyValueFromPropertyFile(EnumConstants.FTPPROPERTYFILE.getConstantType(),"ftpusername"),
+					   ftppassword=readKeyValueFromPropertyFile(EnumConstants.FTPPROPERTYFILE.getConstantType(),"ftppassword"),
+					   ftpFilePath=readKeyValueFromPropertyFile(EnumConstants.FTPPROPERTYFILE.getConstantType(),"productionsalespath");
+			
+			FtpRequest ftpRequest=new FtpRequest();
+			ftpRequest.setFtpFilePath(ftpFilePath);
+			ftpRequest.setFtpHost(ftphost);
+			ftpRequest.setFtpPassword(ftppassword);
+			ftpRequest.setFtpUsername(ftpusername);
+			
+			config.setFtpRequest(ftpRequest);
+			
+			
 		}
 		return config;
 	}
@@ -265,14 +282,13 @@ public class ServerHelper {
 	
 	private String readKeyValueFromPropertyFile(String propertyFileName,String key ){
 		
-
 		String keyValue=null;
 		try {
 			Properties dbprops = new Properties(); 
 			InputStream inputStream=getClass().getClassLoader().getResourceAsStream(propertyFileName);
 			dbprops.load(inputStream);
 			
-			keyValue = dbprops.get("recipientAddress").toString();
+			keyValue = dbprops.get(key).toString();
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block

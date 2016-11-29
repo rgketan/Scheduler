@@ -68,12 +68,12 @@ kesa.AdminPanelView = function(){
 			
 	};
 	
-	this.ftpObject={
+	/*this.ftpObject={
 		     "ftpHost":"",
 			 "ftpUsername":"",
 			 "ftpPassword":"",
 			 "ftpFilePath":""		
-	};
+	};*/
 	
 	
 	///testFtpConnection
@@ -591,9 +591,44 @@ kesa.AdminPanelView.prototype={
 			this.serviceMgr.triggerConnectivity({}, this.onConnectivityResponse.bind(this),this.onConnectivityFailure.bind(this));
 			//this.onConnectivityResponse();
 		},
+		
+		testFTPConnectivity:function(){
+			
+			
+			/*ftphost=global-ftp.ovs.ten.fujitsu.com
+			ftpusername=gcw|gl\\gcw_admin
+			ftppassword=ZJt1J4bB
+			productionsalespath=/gcw/TGS/FTCA/Sales/
+			*/
+			
+			//kesaFtpHost,kesaFtpUserName,kesaFtpPassword,kesaFtpPath
+			
+			var ftpHost = $("#kesaFtpHost").val();
+			var ftpUserName = $("#kesaFtpUserName").val();
+			var ftpPassword = $("#kesaFtpPassword").val();
+			var ftpPath = $("#kesaFtpPath").val();
+			
+			
+			console.log("FTP DETAILS WE GET IS::"+ftpHost+"| user name:"+ftpUserName+"|password:"+ftpPassword+"|PATH::"+ftpPath);
+			
+			this.ftpObject={
+				     "ftpHost":ftpHost,
+					 "ftpUsername":ftpUserName,
+					 "ftpPassword":ftpPassword,
+					 "ftpFilePath":ftpPath		
+			};
+			
+			this.serviceMgr.triggerFtpConnectivity(this.ftpObject, this.onFtpConnectivityResponse.bind(this),this.onFtpConnectivityFailure.bind(this));
+			//this.onFtpConnectivityResponse();
+		},
+		
 		onConnectivityFailure :function(){
 			$("#kesa-loader").hide();
 			$("#connectionResultMessage").html("DB -Connectivity test failed..");
+		},
+		onFtpConnectivityFailure :function(){
+			$("#kesa-loader").hide();
+			$("#connectionResultMessage").html("FTP -Connectivity test failed..");
 		},
 		onConnectivityResponse:function(response){
 			$("#kesa-loader").hide();
@@ -610,6 +645,26 @@ kesa.AdminPanelView.prototype={
 			}else{
 				
 				$("#connectionResultMessage").html("DB -Connectivity test failed.."+response.detailMessageOnFailure);
+				
+				//this.onConnectivityFailure();
+			}
+			
+		},
+		onFtpConnectivityResponse:function(response){
+			$("#kesa-loader").hide();
+			
+			console.log("TEST FTP CONNECTIVITY:::");
+			console.log(response);
+			if(response.responseStatus === "success"){
+				//$("#kesaTestFTPConnectionBtn").hide();
+				$("#connectionResultMessage").html("FTP -Connection successfull..");
+				this.processStep = 3;
+				this.renderProcessSteps();
+				//$("#kesaTestConnectionBtn").removeClass(this.hideMeClassIdentifier);
+				
+			}else{
+				
+				$("#connectionResultMessage").html("FTP -Connectivity test failed.."+response.detailMessageOnFailure);
 				
 				//this.onConnectivityFailure();
 			}
@@ -637,13 +692,20 @@ kesa.AdminPanelView.prototype={
 				this.onfileNamesFetchedResponse(response.listOfSourceFiles);
 				
 				$("#kesaEmailIds").val(response.recipientAddress);//=response.recipientAddress;
-			}else{
 				
+				var ftpRequest=response.ftpRequest;
+				
+							
+				$("#kesaFtpHost").val(ftpRequest.ftpHost);
+				$("#kesaFtpUserName").val(ftpRequest.ftpUsername);
+				$("#kesaFtpPassword").val(ftpRequest.ftpPassword);
+				$("#kesaFtpPath").val(ftpRequest.ftpFilePath);
+				
+			}else{
 				$("#kesa-loader").hide();
 				$("#connectionResultMessage").html(response.detailMessageOnFailure);
 				
 				//this.onConnectivityFailure();
-				
 			}
 			
 		},
@@ -786,6 +848,26 @@ kesa.AdminPanelServiceLayer.prototype={
 					contentType: "application/json; charset=utf-8",
 				    data : JSON.stringify(data),
 					type:"GET",
+					success:connectivityCallBack,
+					error:connectivityCallBackError,
+					timeout:connectivityCallBackError
+					
+				});
+			}
+			else {
+				connectivityCallBack({
+					responseStatus:'success'
+				});
+			}
+		},
+		triggerFtpConnectivity:function(data,connectivityCallBack,connectivityCallBackError){
+			$("#kesa-loader").show();
+			if (!SIMULATE_BACKEND)	 {
+				$.ajax({
+					url:"neozant/schedule/testFtpConnection",
+					contentType: "application/json; charset=utf-8",
+					data : JSON.stringify(data),
+					type:"POST",
 					success:connectivityCallBack,
 					error:connectivityCallBackError,
 					timeout:connectivityCallBackError
