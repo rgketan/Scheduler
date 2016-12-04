@@ -92,7 +92,6 @@ public class ServerHelper {
 			Statement stmnt= this.conn.getConnection().createStatement();
 			
 			//String fileContent=stringBuffer.toString();
-			
 			//String[] listOfQueries=fileContent.split(";");
 			
 			ResultSet rs = stmnt.executeQuery(stringBuffer.toString());
@@ -274,6 +273,14 @@ public class ServerHelper {
 		mulipleAddress.add("steamtechnics@gmail.com");
 		mulipleAddress.add("jija.1987@gmail.com");
 		
+		
+		FtpRequest ftpRequest=new FtpRequest();
+		ftpRequest.setFtpFilePath("C:");
+		ftpRequest.setFtpHost("HOST");
+		ftpRequest.setFtpPassword("PASSWORD");
+		ftpRequest.setFtpUsername("USERNAME");
+		
+		scheduleData.setFtpRequest(ftpRequest);
 		scheduleData.setRecipientAddress(mulipleAddress);
 		return scheduleData;
 	}
@@ -328,6 +335,13 @@ public class ServerHelper {
 			
 			dataStorageHelper.addNewEvent(scheduleData.getOutputFileName(), scheduledEventObject);
 			
+			//ENTER FTP DETAILS ONLY IF FTP TYPE REQUEST
+			if(scheduleData.getTypeOfEvent().equalsIgnoreCase(EnumConstants.FTPTYPEEVENT.getConstantType())) {
+				dataStorageHelper.addNewFtpEventDetails(scheduleData.getOutputFileName(), scheduleData.getFtpRequest());
+			}
+			
+			
+			
 		} catch (Exception ex) {
 			logger.error("SchedulerApis:: ERROR UNABLE TO SCHEDULE EVENT: " + ex.getMessage());
 			successFlag = "failure";
@@ -370,9 +384,7 @@ public class ServerHelper {
 		
 		scheduledEventObject.setUniqueId(uniqueId);
 		
-		scheduledEventObject.setEnvironmentName(scheduleData.getEnvironmentName());
-		scheduledEventObject.setTypeOfReport(scheduleData.getTypeOfReport());
-		
+		scheduledEventObject.setTypeOfEvent(scheduleData.getTypeOfEvent());
 		
 		return scheduledEventObject;
 	}

@@ -150,7 +150,6 @@
 						<div class="lead">
 							<span class="lead kesa-login-error" id="configurationNotFilledMsg">
 							</span>
-						
 						</div>
 						<!-- button type="button" class="btn btn-info next-step" id="kesaFetchFileList"> Fetch  file </button KV-->
 						SELECT FILE TO BE EXECUTE 
@@ -224,7 +223,7 @@
 					<div class="row" >
 						<label> Select type  :</label> 
 						<input class="radio-button-ftp" type="radio" name="kesa-repeat-type" value="email" kesa-data="EMAIL" checked="checked">Email
- 						<input class="radio-button-ftp" type="radio" name="kesa-repeat-type" value="ftp" kesa-data="FTP">FTP<br>
+ 						<input id="kesa-ftp-radio" class="radio-button-ftp" type="radio" name="kesa-repeat-type" value="ftp" kesa-data="FTP">FTP<br>
 					</div>
 					
 					<div class="row" id="emailWrapper">
@@ -256,8 +255,10 @@
 					On Date: <span id="dateConfirmation" class="dfn">2nd June 2016</span><br/>
 					On Time: <span id="timeConfirmation" class="dfn">2:00:PM</span><br/>
 					OutPut Extension Would be : <span id="outputConfirmation" class="dfn">CSV</span><br/>
-					Email would be sent to: <span id="emailsConfirmation" class="dfn">CSV,abc@abc.com</span><br/>
 					Repeated on <span id='repeatConfirmation' class='dfn'></span> basis<br/>
+					Type of Event: <span id='typeOfEvent' class='dfn'>FTP</span><br/>
+					<span id="detailConfirmation" class="dfn">CSV,abc@abc.com</span><br/>
+					
 					<!--
 					will Upload on : <span id="environmentConfirmation" class="dfn">STAGING</span><br/>
 					and Type of Report : <span id="typeOfReportConfirmation" class="dfn">COSTS</span><br/>
@@ -324,7 +325,8 @@
 					        <th>Date And Time</th>
 					        <th>Output Format</th>
 					        <th>Mode</th>
-					        <th>Email</th>
+					        <th>Type Of Event</th>
+					        <th>Details</th>
 					        <th>Status</th>
 					        <!--<th>Environment</th>
 					         th>Type Of Report</th>-->
@@ -361,7 +363,7 @@
 					        <th>Execute Time</th>
 					        <th>Result</th>
 					        <th>Output File </th>
-					        <th>Email Status</th>
+					        <th>Status</th>
 					        <!-- th>Ftp Status</th--> 
 					      </tr>
 					    </thead>

@@ -8,7 +8,7 @@ public class ScheduleDataRequest extends GenericRequestType{
 	private String sqlFilePath;
 	private String fileFormat; // xls or csv
 
-	private String outputFileName;
+	private String outputFileName; //IS SAME AS EVENT NAME
 
 	private String fromEmailId;
 	
@@ -20,9 +20,10 @@ public class ScheduleDataRequest extends GenericRequestType{
 
 	ArrayList<String> recipientAddress; 
 	
-	private String environmentName;
 	
-	private String typeOfReport;
+	private String typeOfEvent;
+	
+	private FtpRequest ftpRequest;
 	
 	public ScheduleDataRequest() {
 
@@ -105,22 +106,22 @@ public class ScheduleDataRequest extends GenericRequestType{
 		this.alreadyCreated = alreadyCreated;
 	}
 
-	public String getEnvironmentName() {
-		return environmentName;
+	public String getTypeOfEvent() {
+		return typeOfEvent;
 	}
 
-	public void setEnvironmentName(String environmentName) {
-		this.environmentName = environmentName;
+	public void setTypeOfEvent(String typeOfEvent) {
+		this.typeOfEvent = typeOfEvent;
 	}
 
-	public String getTypeOfReport() {
-		return typeOfReport;
+	public FtpRequest getFtpRequest() {
+		return ftpRequest;
 	}
 
-	public void setTypeOfReport(String typeOfReport) {
-		this.typeOfReport = typeOfReport;
+	public void setFtpRequest(FtpRequest ftpRequest) {
+		this.ftpRequest = ftpRequest;
 	}
-	
+
 	
 	
 }

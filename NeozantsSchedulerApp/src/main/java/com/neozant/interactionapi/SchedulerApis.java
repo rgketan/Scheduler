@@ -119,7 +119,7 @@ public class SchedulerApis {
 	public SchedulerResponse databaseConnectivity(){
 		
 		SchedulerResponse schedulerResponse=new SchedulerResponse();
-		/*Connection conn=null;
+		Connection conn=null;
 		
 		try{
 			ServerHelper helper=ServerHelper.getServerHelperObject();
@@ -137,9 +137,9 @@ public class SchedulerApis {
 			
 			//schedulerResponse.setDetailMessageOnFailure("Could not establish the connection with D/B");
 			schedulerResponse.setResponseStatus("failure");
-		}*/
+		}
 		
-		schedulerResponse.setResponseStatus("success");
+		//schedulerResponse.setResponseStatus("success");
 		return schedulerResponse;
 	}
 	
@@ -291,12 +291,13 @@ public class SchedulerApis {
 			
 			FtpServerHelper ftpServerHelper=new FtpServerHelper();
 			
-			boolean connectionFlag=ftpServerHelper.checkFtpConnectivity(ftpRequest);
+			String failureMessage=ftpServerHelper.checkFtpConnectivity(ftpRequest);
 			
-			System.out.println("TEST FTP CONNECTIVITY FLAG WE GET IS::"+connectionFlag);
+			System.out.println("TEST FTP FAILURE FLAG WE GET IS::"+failureMessage);
 			
-			if(!connectionFlag){
+			if(failureMessage!=null){
 				successFlag = "failure";
+				schedulerResponse.setDetailMessageOnFailure(failureMessage);
 			}
 			schedulerResponse.setResponseStatus(successFlag);
 			return schedulerResponse;

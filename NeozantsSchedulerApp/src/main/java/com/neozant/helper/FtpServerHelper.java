@@ -4,14 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
 
-import com.neozant.enums.EnumConstants;
 import com.neozant.request.FtpRequest;
 
 
@@ -19,21 +16,21 @@ public class FtpServerHelper {
 
 	final static Logger logger = Logger.getLogger(FtpServerHelper.class);
 	
-	public boolean uploadFIleToFtpServer(String fileToUpload,String environment,String typeOfReport){
+	public boolean uploadFIleToFtpServer(FtpRequest ftpRequest,String fileToUpload){
 		boolean successFlag=true;
 		
-		Properties ftpProps = new Properties(); 
+		//Properties ftpProps = new Properties(); 
 		FTPClient client = new FTPClient();
 		FileInputStream fis = null;
 		
   		try {
-  			InputStream inputStream=getClass().getClassLoader().getResourceAsStream(EnumConstants.FTPPROPERTYFILE.getConstantType());
-			ftpProps.load(inputStream);
+  			//InputStream inputStream=getClass().getClassLoader().getResourceAsStream(EnumConstants.FTPPROPERTYFILE.getConstantType());
+			//ftpProps.load(inputStream);
 			
-			String hostName=ftpProps.getProperty(EnumConstants.FTPHOST.getConstantType()),
-				   ftpUserName=ftpProps.getProperty(EnumConstants.FTPUSERNAME.getConstantType()),
-				   ftpPassowrd=ftpProps.getProperty(EnumConstants.FTPUSERPASSWORD.getConstantType()),
-				   directoryToUploadFile=ftpProps.getProperty(getFileUploaderPath(environment,typeOfReport));
+			String hostName=ftpRequest.getFtpHost(),
+				   ftpUserName=ftpRequest.getFtpUsername(),
+				   ftpPassowrd=ftpRequest.getFtpPassword(),
+				   directoryToUploadFile=ftpRequest.getFtpFilePath();
 			
 			logger.info("FtpServerHelper::PATH OF DIRECTORY TO UPLOAD FILE WE GET IS:"+directoryToUploadFile);
 			
@@ -71,8 +68,8 @@ public class FtpServerHelper {
 				}
 			} else {
 				successFlag=false;
-				System.out.println("logged in unsuccessfull");
-				logger.error("FtpServerHelper:: logged in unsuccessfull");
+				System.out.println("logged in unsuccessful");
+				logger.error("FtpServerHelper:: logged in unsuccessful");
 			}
 			client.logout();
 		} catch (FileNotFoundException e) {
@@ -98,7 +95,7 @@ public class FtpServerHelper {
 					fis.close();
 				}
 				client.disconnect();
-				ftpProps.clear();
+				//ftpProps.clear();
 			} catch (IOException e) {
 				logger.error("FtpServerHelper:: ERROR WHILE CLOSING CONNECTION::"+e.getMessage());
 			}
@@ -108,7 +105,7 @@ public class FtpServerHelper {
 	
 	
 	
-	private String getFileUploaderPath(String enviornment,String typeOfReport){
+	/*private String getFileUploaderPath(String enviornment,String typeOfReport){
 		
 		String uploadPath;
 			if(EnumConstants.FTPPRODUCTIONENVIORNMENT.getConstantType().equalsIgnoreCase(enviornment)){
@@ -129,12 +126,12 @@ public class FtpServerHelper {
 		
 			logger.info("FtpServerHelper::KEY VALUE OF UPLOADED PATH WE GET IS:"+uploadPath);
 		return uploadPath;
-	}
+	}*/
 	
 	
 	
-	public boolean checkFtpConnectivity(FtpRequest ftpRequest){
-		boolean connectionFlag=true;
+	public String checkFtpConnectivity(FtpRequest ftpRequest){
+		String failureMessage=null;
 		
 		try{
 		FTPClient client = new FTPClient();
@@ -143,31 +140,30 @@ public class FtpServerHelper {
 		boolean loginFlag = client.login(ftpRequest.getFtpUsername(),ftpRequest.getFtpPassword());
 
 		if (loginFlag) {
-			System.out.println("logged in successfully");
 			logger.info("FtpServerHelper:: LOGGED IN SUCCESSFULLY");
 
 			client.setFileType(FTP.BINARY_FILE_TYPE);
 			client.changeWorkingDirectory(ftpRequest.getFtpFilePath());
 			
 		}else{
-			connectionFlag=false;
 			logger.error("FtpServerHelper:: ERROR CONNECTING TO FTP SERVER::LOGIN FLAG :"+loginFlag);
 		}
 		
 		
 		if(client.getReplyCode()!=250){
 			logger.error("FtpServerHelper:: ERROR CONNECTING TO FTP SERVER REASON::"+client.getReplyString());
-			connectionFlag=false;
+			failureMessage=client.getReplyString();
 		}
-		System.out.println("FOR DEBUG POINT");
+		
 		
 		}catch(Exception ex){
-			connectionFlag=false;
+			/*failureMessage="UNABLE TO CONNECT FTP SERVER: "+ftpRequest.getFtpHost();*/
+			failureMessage="SERVER NOT FOUND: "+ftpRequest.getFtpHost();
 			logger.error("FtpServerHelper:: ERROR WHILE CONNECTING TO FTP SERVER::"+ex.getMessage());
 			ex.printStackTrace();
 		}
 		
 		
-		return connectionFlag;
+		return failureMessage;
 	}
 }

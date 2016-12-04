@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import com.neozant.dbconnectivity.LocalDbConnectionsPool;
 import com.neozant.enums.EnumConstants;
 import com.neozant.enums.EnumQueriesToExecute;
+import com.neozant.request.FtpRequest;
 import com.neozant.response.ScheduleEventDetailsRespose;
 import com.neozant.response.ScheduleEventRespose;
 import com.neozant.storage.DetailsOfScheduledEventObject;
@@ -62,6 +63,7 @@ public class DataStorageHelper {
 
 			stmt.executeUpdate(EnumQueriesToExecute.CREATEEVENT.getQuery());
 			stmt.executeUpdate(EnumQueriesToExecute.CREATEEVENTDETAILS.getQuery());
+			stmt.executeUpdate(EnumQueriesToExecute.CREATEFTPEVENTDETAILS.getQuery());
 
 			stmt.close();
 			localDbConnection.free(conn);
@@ -89,10 +91,13 @@ public class DataStorageHelper {
 			   uniqueId=scheduledEventObject.getUniqueId(),
 			   status=scheduledEventObject.getStatus(),
 			   jobKeyName=scheduledEventObject.getJobKeyName(),
-			   enviornmentName=scheduledEventObject.getEnvironmentName(),
-			   typeOfReport=scheduledEventObject.getTypeOfReport();
+			   typeOfEvent=scheduledEventObject.getTypeOfEvent();
 		   
 		   
+		
+		//INSERTEVENT("INSERT OR REPLACE INTO EVENT (NAME,FILE_TO_EXECUTE,DATE_AND_TIME,OUTPUT_FILE_FORMAT,TIME_REPEAT_ON,UNIQUE_ID,STATUS,JOB_KEY_NAME,TYPE_OF_REPORT,RECIPIENT_ADDRESS) " +
+	    //"VALUES (?,?,?,?,?,?,?,?,?,?)"),
+		
 		//PreparedStatement stmt = c.prepareStatement(sql);
 		Connection conn=null;
 		PreparedStatement stmt =null;
@@ -105,12 +110,15 @@ public class DataStorageHelper {
 			stmt.setString(3,dateAndTime);
 			stmt.setString(4,outputFileFormat);
 			stmt.setString(5,timeRepeatOn);
-			stmt.setString(6,receipientAssress);
-			stmt.setString(7,uniqueId);
-			stmt.setString(8,status);
-			stmt.setString(9,enviornmentName);
-			stmt.setString(10,typeOfReport);
-			stmt.setString(11,jobKeyName);
+			
+			stmt.setString(6,uniqueId);
+			stmt.setString(7,status);
+			stmt.setString(8,jobKeyName);
+			
+			stmt.setString(9,typeOfEvent);
+			stmt.setString(10,receipientAssress);
+			
+			
 			stmt.executeUpdate();
 
 		} catch (SQLException e) {
@@ -133,9 +141,8 @@ public class DataStorageHelper {
 		
 		String executedTime=detailEventObject.getExecutedTime(), 
 			  result=detailEventObject.getResult(),
-			  status=detailEventObject.getEmailStatus(),
 			  outputFileName=detailEventObject.getOuputFileName(),
-			  ftpStatus=detailEventObject.getFtpStatus();
+			  status=detailEventObject.getStatus();
 		
 		Connection conn=null;
 		PreparedStatement stmt =null;
@@ -143,12 +150,13 @@ public class DataStorageHelper {
 			conn=localDbConnection.getConnection();
 			stmt = conn.prepareStatement(EnumQueriesToExecute.INSERTEVENTDETAIL.getQuery());
 			
+			//EVENT_NAME,EXECUTED_TIME,RESULT,OUTPUT_FILE_NAME,STATUS
+			
 			stmt.setString(1,eventName);
 			stmt.setString(2,executedTime);
 			stmt.setString(3,result);
-			stmt.setString(4,status);
-			stmt.setString(5,ftpStatus);
-			stmt.setString(6,outputFileName);
+			stmt.setString(4,outputFileName);
+			stmt.setString(5,status);
 			
 			//ENVIORNMENT_NAME
 			//TYPE_OF_REPORT
@@ -166,6 +174,45 @@ public class DataStorageHelper {
 		return successFlag; 
 	}
 	
+	
+	//FTP RELATED
+	public boolean addNewFtpEventDetails(String eventName,FtpRequest ftpRequest){
+		boolean successFlag=true;
+		
+		
+		String hostName=ftpRequest.getFtpHost(),
+			   hostUserName=ftpRequest.getFtpUsername(),
+			   hostUserPassword=ftpRequest.getFtpPassword(),
+			   ftpPath=ftpRequest.getFtpFilePath();
+		
+		Connection conn=null;
+		PreparedStatement stmt =null;
+		try {
+			conn=localDbConnection.getConnection();
+			stmt = conn.prepareStatement(EnumQueriesToExecute.INSERTFTPEVENTDETAIL.getQuery());
+			
+			stmt.setString(1,eventName);
+			stmt.setString(2,hostName);
+			stmt.setString(3,hostUserName);
+			stmt.setString(4,hostUserPassword);
+			stmt.setString(5,ftpPath);
+			
+			
+			//ENVIORNMENT_NAME
+			//TYPE_OF_REPORT
+			
+			stmt.executeUpdate();
+			
+		} catch (SQLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		successFlag=false;
+		}finally {
+			closeStatementAndConnection(conn,stmt);
+		}
+		
+		return successFlag; 
+	}
 	public ScheduleEventRespose getAllScheduledEvents(){
 		
 		ScheduleEventRespose scheduleEventRespose=new ScheduleEventRespose();
@@ -192,17 +239,18 @@ public class DataStorageHelper {
 					   		scheduledEventObject.setDateAndTimeInString(rs.getString("DATE_AND_TIME"));
 					   		scheduledEventObject.setOutputFileFormat(rs.getString("OUTPUT_FILE_FORMAT"));
 					   		scheduledEventObject.setTimerRepeatOn(rs.getString("TIME_REPEAT_ON"));
-					   		scheduledEventObject.setRecipientAddress(rs.getString("RECIPIENT_ADDRESS"));
 					   		scheduledEventObject.setUniqueId(rs.getString("UNIQUE_ID"));
 					   		scheduledEventObject.setStatus(rs.getString("STATUS"));
 					   		scheduledEventObject.setJobKeyName(rs.getString("JOB_KEY_NAME"));
-					   		
-					   		scheduledEventObject.setEnvironmentName(rs.getString("ENVIORNMENT_NAME"));
-					   		scheduledEventObject.setTypeOfReport(rs.getString("TYPE_OF_REPORT"));
-					   		
-					   		
-					   		scheduledEventObject.setJobKeyName(rs.getString("JOB_KEY_NAME"));
 
+					   		scheduledEventObject.setTypeOfEvent(rs.getString("TYPE_OF_EVENT"));
+					   		
+					   		if(rs.getString("TYPE_OF_EVENT").equalsIgnoreCase(EnumConstants.EMAILTYPEEVENT.getConstantType())){
+					   			scheduledEventObject.setRecipientAddress(rs.getString("RECIPIENT_ADDRESS"));
+					   		}else{
+					   			scheduledEventObject.setFtpRequest(getFtpEventDetail(rs.getString("NAME")));
+					   		}
+					   		
 					   		listOfScheduledEventObject.add(scheduledEventObject);
 						}
 						
@@ -256,8 +304,17 @@ public class DataStorageHelper {
 					   		scheduledEventObject.setStatus(rs.getString("STATUS"));
 					   		scheduledEventObject.setJobKeyName(rs.getString("JOB_KEY_NAME"));
 					   		
-					   		scheduledEventObject.setEnvironmentName(rs.getString("ENVIORNMENT_NAME"));
-					   		scheduledEventObject.setTypeOfReport(rs.getString("TYPE_OF_REPORT"));
+					   		scheduledEventObject.setTypeOfEvent(rs.getString("TYPE_OF_EVENT"));
+					   		
+					   		scheduledEventObject.setFtpRequest(getFtpEventDetail(rs.getString("NAME")));
+					   		
+					   		
+					   		if(rs.getString("TYPE_OF_EVENT").equalsIgnoreCase(EnumConstants.EMAILTYPEEVENT.getConstantType())){
+					   			scheduledEventObject.setRecipientAddress(rs.getString("RECIPIENT_ADDRESS"));
+					   		}else{
+					   			scheduledEventObject.setFtpRequest(getFtpEventDetail(rs.getString("NAME")));
+					   		}
+					   		
 					   		
 					   		listOfScheduledEventObject.add(scheduledEventObject);
 						}
@@ -302,17 +359,21 @@ public class DataStorageHelper {
 		   		scheduledEventObject.setDateAndTimeInString(rs.getString("DATE_AND_TIME"));
 		   		scheduledEventObject.setOutputFileFormat(rs.getString("OUTPUT_FILE_FORMAT"));
 		   		scheduledEventObject.setTimerRepeatOn(rs.getString("TIME_REPEAT_ON"));
-		   		scheduledEventObject.setRecipientAddress(rs.getString("RECIPIENT_ADDRESS"));
+
 		   		scheduledEventObject.setUniqueId(rs.getString("UNIQUE_ID"));
 		   		scheduledEventObject.setStatus(rs.getString("STATUS"));
 		   		scheduledEventObject.setJobKeyName(rs.getString("JOB_KEY_NAME"));
 		   		
-		   		scheduledEventObject.setEnvironmentName(rs.getString("ENVIORNMENT_NAME"));
-		   		scheduledEventObject.setTypeOfReport(rs.getString("TYPE_OF_REPORT"));
+		   		scheduledEventObject.setTypeOfEvent(rs.getString("TYPE_OF_EVENT"));
+		   		
+		   		if(rs.getString("TYPE_OF_EVENT").equalsIgnoreCase(EnumConstants.EMAILTYPEEVENT.getConstantType())){
+		   			scheduledEventObject.setRecipientAddress(rs.getString("RECIPIENT_ADDRESS"));
+		   		}else{
+		   			scheduledEventObject.setFtpRequest(getFtpEventDetail(rs.getString("NAME")));
+		   		}
 		   		
 		   		rs.close();
 	   		 }
-	   
 	   	  
 	   	} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -346,12 +407,11 @@ public class DataStorageHelper {
 				while (rs.next()) {
 					
 					DetailsOfScheduledEventObject detailsOfScheduledEventObject = new DetailsOfScheduledEventObject();
-					detailsOfScheduledEventObject.setEmailStatus(rs.getString("EMAIL_STATUS"));
 					detailsOfScheduledEventObject.setExecutedTime(rs.getString("EXECUTED_TIME"));
 					detailsOfScheduledEventObject.setOuputFileName(rs.getString("OUTPUT_FILE_NAME"));
 					detailsOfScheduledEventObject.setResult(rs.getString("RESULT"));
 
-					detailsOfScheduledEventObject.setFtpStatus(rs.getString("FTP_UPLOAD_STATUS"));
+					detailsOfScheduledEventObject.setStatus(rs.getString("STATUS"));
 					
 					
 					listOfDetailScheduledObject.add(detailsOfScheduledEventObject);
@@ -371,7 +431,48 @@ public class DataStorageHelper {
 	  return scheduleEventDetailsRespose;
 	}
 	
-	
+	//FTP RELATED
+   public FtpRequest getFtpEventDetail(String eventName){
+		
+	   FtpRequest ftpRequest=null;
+		//HashMap<String,ScheduledEventObject> scheduleEventMapper=eventDatabase.getScheduleEventMapper();
+		//existFlag=scheduleEventMapper.containsKey(eventName);
+		Connection conn=null;
+		PreparedStatement stmt =null;
+	   	try {
+	   		 conn=localDbConnection.getConnection();
+	   		 stmt = conn.prepareStatement(EnumQueriesToExecute.GETFTPEVENTDETAILSINFO.getQuery());
+	   		 stmt.setString(1, eventName);
+	   	  
+	   		 if(stmt.execute()){
+	   	  
+	   			ftpRequest=new FtpRequest();
+		   		ResultSet rs=stmt.getResultSet();
+		   		  
+		   		
+		   		ftpRequest.setFtpHost(rs.getString("HOST_NAME"));
+		   		
+		   		ftpRequest.setFtpUsername(rs.getString("HOST_USERNAME"));
+		   		
+		   		ftpRequest.setFtpPassword(rs.getString("HOST_PASSWORD"));
+		   		
+		   		ftpRequest.setFtpFilePath(rs.getString("PATH_URL"));
+		   		
+		   		rs.close();
+	   		 }
+	   
+	   	  
+	   	} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}finally {
+			closeStatementAndConnection(conn,stmt);
+		}
+	  return ftpRequest;
+	}
+
+
 	
 	public boolean deleteEventRelatedData(String eventName){
 		boolean successFlag=true;
@@ -393,6 +494,13 @@ public class DataStorageHelper {
 					stmt1.close();
 				}
 				
+				//FTP related
+				if(checkIfEventFtpDetailsExist(eventName)){
+					PreparedStatement stmt1 = conn.prepareStatement(EnumQueriesToExecute.DELETEFTPEVENTDETAILS.getQuery());
+					stmt1.setString(1,eventName);
+					stmt1.executeUpdate();
+					stmt1.close();
+				}
 				
 			}
 		} catch (SQLException e) {
@@ -405,6 +513,9 @@ public class DataStorageHelper {
 		
 		return successFlag; 
 	}
+	
+	
+	
 	
 	
 	public boolean updateEventStatus(String eventName,String status){
@@ -507,9 +618,37 @@ public class DataStorageHelper {
 	   	}
 	   	
 	   	} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			//existFlag=false;
+		}finally {
+			closeStatementAndConnection(conn,stmt);
+		}
+	  return existFlag;
+	}
+	
+	
+	//FTP related
+	public boolean checkIfEventFtpDetailsExist(String eventName) {
+		
+		boolean existFlag=false;	
+		Connection conn=null;
+		PreparedStatement stmt =null;
+		 
+		 
+	   	try {
+	   		 conn=localDbConnection.getConnection();
+	   	     stmt = conn.prepareStatement(EnumQueriesToExecute.GETFTPEVENTDETAILSINFO.getQuery());
+	   	     stmt.setString(1, eventName);
+	   	  
+	   	  try (ResultSet rs = stmt.executeQuery()) {
+	   		
+	   		if (rs.next()) {
+                existFlag=true;
+            }
+	   		rs.close();
+	   	}
+	   	
+	   	} catch (SQLException e) {
+			e.printStackTrace();
 		}finally {
 			closeStatementAndConnection(conn,stmt);
 		}

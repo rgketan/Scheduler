@@ -11,8 +11,8 @@ public class DetailsOfScheduledEventObject {
 	
 	private String result;
 	private String ouputFileName;
-	private String emailStatus;
-	private String ftpStatus;
+	private String status;
+	
 	
 	public BigInteger getUniqueId() {
 		return uniqueId;
@@ -39,18 +39,14 @@ public class DetailsOfScheduledEventObject {
 	public void setOuputFileName(String ouputFileName) {
 		this.ouputFileName = ouputFileName;
 	}
-	public String getEmailStatus() {
-		return emailStatus;
+	
+	public String getStatus() {
+		return status;
 	}
-	public void setEmailStatus(String emailStatus) {
-		this.emailStatus = emailStatus;
+	public void setStatus(String status) {
+		this.status = status;
 	}
-	public String getFtpStatus() {
-		return ftpStatus;
-	}
-	public void setFtpStatus(String ftpStatus) {
-		this.ftpStatus = ftpStatus;
-	}
+	
 	
 	
 }

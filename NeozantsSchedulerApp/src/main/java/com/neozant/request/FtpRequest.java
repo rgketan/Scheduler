@@ -32,5 +32,10 @@ public class FtpRequest extends GenericRequestType{
 	}
 	
 	
+	public String toString(){
+		String ftpString="HOST:"+ftpHost+" |USERNAME:"+ftpUsername+"|PASSWORD:"+ftpPassword+"| FILE PATH:"+ftpFilePath; 
+		
+		return ftpString;
+	}
 
 }

@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import com.neozant.enums.EnumConstants;
 import com.neozant.helper.DataStorageHelper;
 import com.neozant.interfaces.IMessageValidator;
+import com.neozant.request.FtpRequest;
 import com.neozant.request.GenericRequestType;
 import com.neozant.request.ScheduleDataRequest;
 import com.neozant.request.ScheduleEventDetailsRequest;
@@ -111,9 +112,11 @@ public class ScheduleDataValidator implements IMessageValidator{
 				
 			}else{
 
-				detailMessageOnFailure =checkIfEnviormentAndTypeOfReportExist(scheduleData.getEnvironmentName(),scheduleData.getTypeOfReport());
+				//detailMessageOnFailure =checkIfEnviormentAndTypeOfReportExist(scheduleData.getEnvironmentName(),scheduleData.getTypeOfReport());
 				
-				if(detailMessageOnFailure == null){
+				if(detailMessageOnFailure == null &&  
+				   scheduleData.getTypeOfEvent().equalsIgnoreCase(EnumConstants.EMAILTYPEEVENT.getConstantType())){
+					
 					detailMessageOnFailure =checkIfValidEmailId(scheduleData.getToEmailId());
 				}
 				
@@ -164,14 +167,19 @@ public class ScheduleDataValidator implements IMessageValidator{
 						messageIfnull="TIMER DATE Cannot be NULL or EMPTY";
 					}else{
 						
-						if(scheduleData.getToEmailId()==null ){
-							
-							messageIfnull="EMAIL ID Cannot be NULL or EMPTY";
-						}else{
-							if(scheduleData.getTimerData().getRepeatOn()==null){
+						 if(scheduleData.getTimerData().getRepeatOn()==null){
 								messageIfnull="RepeatOn attribute cannot be NULL or EMPTY";
-							}
-						}
+						 }else {
+							 
+							 if(scheduleData.getTypeOfEvent().equalsIgnoreCase(EnumConstants.EMAILTYPEEVENT.getConstantType())){
+							    if(scheduleData.getToEmailId()==null ){
+									messageIfnull="EMAIL ID Cannot be NULL or EMPTY";
+								}
+							 }else{
+								 messageIfnull=checkFtpRequestIsNotNull(scheduleData.getFtpRequest());	
+							 }
+						 }
+						
 						
 					}
 				}	
@@ -256,7 +264,26 @@ public class ScheduleDataValidator implements IMessageValidator{
 	}
 	
 	
-	private String checkIfEnviormentAndTypeOfReportExist(String enviorment,String typeOfReport){
+	
+	private String checkFtpRequestIsNotNull(FtpRequest ftpRequest){
+		String detailMessageOnFailure=null;
+		if(ftpRequest==null){
+			detailMessageOnFailure="FTP REQUEST DETAILS Cannot be NULL or EMPTY";
+		}else{
+			if(ftpRequest.getFtpFilePath()==null||
+			   ftpRequest.getFtpHost()==null||
+			   ftpRequest.getFtpPassword()==null||
+			   ftpRequest.getFtpUsername()==null){
+				detailMessageOnFailure="FTP HOST OR PATH OR USERNAME OR PASSWORD Cannot be NULL or EMPTY";
+			}
+			
+		}
+		
+		
+		return detailMessageOnFailure;
+		
+	}
+	/*private String checkIfEnviormentAndTypeOfReportExist(String enviorment,String typeOfReport){
 		
 		String detailMessageOnFailure=null;
 		
@@ -278,7 +305,7 @@ public class ScheduleDataValidator implements IMessageValidator{
 		}
 			
 		return detailMessageOnFailure;
-	}
+	}*/
 	
 	
 	

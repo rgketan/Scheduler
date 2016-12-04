@@ -1,5 +1,7 @@
 package com.neozant.storage;
 
+import com.neozant.request.FtpRequest;
+
 
 public class ScheduledEventObject {
 
@@ -27,10 +29,12 @@ public class ScheduledEventObject {
 	//TO UNSCHEDULE THE TASK
 	private String jobKeyName;
 	
-	//FOR FTPSERVER
-	private String environmentName;
+	//FTP OR EMAIL
+	private String typeOfEvent;
 	
-	private String typeOfReport;
+	//FTP DETAILS
+	private FtpRequest ftpRequest;
+	
 	
 	public ScheduledEventObject(){
 		
@@ -122,22 +126,22 @@ public class ScheduledEventObject {
 		this.jobKeyName = jobKeyName;
 	}
 
+	public String getTypeOfEvent() {
+		return typeOfEvent;
+	}
+
+	public void setTypeOfEvent(String typeOfEvent) {
+		this.typeOfEvent = typeOfEvent;
+	}
+
+	public FtpRequest getFtpRequest() {
+		return ftpRequest;
+	}
+
+	public void setFtpRequest(FtpRequest ftpRequest) {
+		this.ftpRequest = ftpRequest;
+	}
 	
-	public String getEnvironmentName() {
-		return environmentName;
-	}
-
-	public void setEnvironmentName(String environmentName) {
-		this.environmentName = environmentName;
-	}
-
-	public String getTypeOfReport() {
-		return typeOfReport;
-	}
-
-	public void setTypeOfReport(String typeOfReport) {
-		this.typeOfReport = typeOfReport;
-	}
 	
 	
 }

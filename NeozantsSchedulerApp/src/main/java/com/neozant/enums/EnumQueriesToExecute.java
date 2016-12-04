@@ -11,38 +11,55 @@ public enum EnumQueriesToExecute {
 	                   " DATE_AND_TIME       TEXT    NOT NULL, " +
 	                   " OUTPUT_FILE_FORMAT  TEXT    NOT NULL, " +
 	                   " TIME_REPEAT_ON      TEXT    NOT NULL, " +
-	                   " RECIPIENT_ADDRESS   CHAR(50), " +
 	                   " UNIQUE_ID           TEXT    NOT NULL, " +
 	                   " STATUS		         TEXT    NOT NULL, " +
-	                   " ENVIORNMENT_NAME    TEXT    NOT NULL, " +
-	                   " TYPE_OF_REPORT      TEXT    NOT NULL, " +
-	                   " JOB_KEY_NAME        TEXT)"),
+	                   " JOB_KEY_NAME		 TEXT            , " +
+	                   " TYPE_OF_EVENT      TEXT    NOT NULL, " +    //FTP OR EMAIL
+	                   " RECIPIENT_ADDRESS   CHAR(50))"),            //NULL IF FTP
 	
 	
+	CREATEFTPEVENTDETAILS("CREATE TABLE IF NOT EXISTS FTPEVENTDETAILS " +
+	                   "(EVENT_NAME    TEXT    NOT NULL," +
+	   			       " HOST_NAME     TEXT    NOT NULL, " +
+	   			       " HOST_USERNAME TEXT    NOT NULL, " +
+	   			       " HOST_PASSWORD TEXT    NOT NULL, " +
+	   			       " PATH_URL      TEXT    NOT NULL, " +
+	   			       " FOREIGN KEY(EVENT_NAME) REFERENCES EVENT(NAME))"),                   
+	                   
+	                   
+	                   
 	CREATEEVENTDETAILS("CREATE TABLE IF NOT EXISTS EVENTDETAILS " +
 			            "(EVENT_NAME 		TEXT    NOT NULL," +
 			            " EXECUTED_TIME     TEXT    NOT NULL, " +
 			            " RESULT	        TEXT    NOT NULL, " +
-			            " EMAIL_STATUS      TEXT, "+
-			            " FTP_UPLOAD_STATUS TEXT, "+
 			            " OUTPUT_FILE_NAME   TEXT, "+
+			            " STATUS      TEXT, "+    //FTP OR MEAIL STATUS
 			            " FOREIGN KEY(EVENT_NAME) REFERENCES EVENT(NAME))"),
 			            
-	INSERTEVENT("INSERT OR REPLACE INTO EVENT (NAME,FILE_TO_EXECUTE,DATE_AND_TIME,OUTPUT_FILE_FORMAT,TIME_REPEAT_ON,RECIPIENT_ADDRESS,UNIQUE_ID,STATUS,ENVIORNMENT_NAME,TYPE_OF_REPORT,JOB_KEY_NAME) " +
-            	"VALUES (?,?,?,?,?,?,?,?,?,?,?)"),		  
+			            
+	INSERTEVENT("INSERT OR REPLACE INTO EVENT (NAME,FILE_TO_EXECUTE,DATE_AND_TIME,OUTPUT_FILE_FORMAT,TIME_REPEAT_ON,UNIQUE_ID,STATUS,JOB_KEY_NAME,TYPE_OF_EVENT,RECIPIENT_ADDRESS) " +
+            	"VALUES (?,?,?,?,?,?,?,?,?,?)"),		  
     
-    INSERTEVENTDETAIL("INSERT OR REPLACE INTO EVENTDETAILS (EVENT_NAME,EXECUTED_TIME,RESULT,EMAIL_STATUS,FTP_UPLOAD_STATUS,OUTPUT_FILE_NAME) " +
-                    	"VALUES (?,?,?,?,?,?)"),      
+    INSERTEVENTDETAIL("INSERT OR REPLACE INTO EVENTDETAILS (EVENT_NAME,EXECUTED_TIME,RESULT,OUTPUT_FILE_NAME,STATUS) " +
+                    	"VALUES (?,?,?,?,?)"),      
                     	
-    
+    INSERTFTPEVENTDETAIL("INSERT OR REPLACE INTO FTPEVENTDETAILS (EVENT_NAME,HOST_NAME,HOST_USERNAME,HOST_PASSWORD,PATH_URL) " +
+                            	"VALUES (?,?,?,?,?)"),
+                            	
                     	
     GETALLEVENTS("SELECT * FROM EVENT"),                	
     GETEVENTINFO("SELECT * FROM EVENT where NAME=?"),
-    GETEVENTDETAILSINFO("SELECT * FROM EVENTDETAILS where EVENT_NAME=?"),                	
+    GETEVENTDETAILSINFO("SELECT * FROM EVENTDETAILS where EVENT_NAME=?"),         
+    
+    GETFTPEVENTDETAILSINFO("SELECT * FROM FTPEVENTDETAILS where EVENT_NAME=?"),
+    
     
     GETALLUNFINISHEDEVENTS("SELECT * FROM 'EVENT' where status != 'FINISHED'"),
                     	
     DELETEEVENT("DELETE FROM EVENT where NAME=?"),
+    
+    DELETEFTPEVENTDETAILS("DELETE FROM FTPEVENTDETAILS where EVENT_NAME=?"),
+    
     DELETEEVENTDETAILS("DELETE FROM EVENTDETAILS where EVENT_NAME=?"),
 
     //UPDATEEVENTSTATUS("UPDATE EVENT set STATUS =? where NAME=?");

@@ -32,7 +32,7 @@ public enum EnumConstants {
 	ONETIME("onetime"),
 	
 	//ftp details
-	FTPHOST("ftphost"),
+	/*FTPHOST("ftphost"),
 	FTPUSERNAME("ftpusername"),
 	FTPUSERPASSWORD("ftppassword"),
 	
@@ -45,9 +45,10 @@ public enum EnumConstants {
 	FTPPRODUCTIONSALESPATH("productionsalespath"),
 	FTPPRODUCTIONCOSTSPATH("productioncostspath"),
 	FTPSTAGINGSALESPATH("stagingsalespath"),
-	FTPSTAGINGCOSTSPATH("stagingcostspath");
+	FTPSTAGINGCOSTSPATH("stagingcostspath"),*/
 	
-	
+	FTPTYPEEVENT("ftp"),
+	EMAILTYPEEVENT("email");
 	
 	private String constantType;  
 	

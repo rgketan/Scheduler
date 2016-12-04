@@ -64,32 +64,7 @@ public class InitiateServlet extends HttpServlet{
 			
 			ScheduleDataRequest scheduleData=new ScheduleDataRequest();
 			
-			
-			
-			//GETTING EMAIL IDS
-			String[] emailIds= scheduleEvent.getRecipientAddress().split(";");
-			
-			String toEmailId=emailIds[0],
-				   listOfaddresses=emailIds[1];
-			 
-			String recepientAddresses =listOfaddresses.replace("[","").replace("]","");
-			ArrayList<String> myList = new ArrayList<String>();
-			
-			logger.info("InitiateServlet: RecipientAddress we get is :"+recepientAddresses+" and size:"+recepientAddresses.length());
-			if(recepientAddresses.length()>0){
-				myList.addAll(Arrays.asList(recepientAddresses.split(",")));
-			}
-			
-			logger.info("InitiateServlet: RecipientAddress we get is :"+myList.toString());
-			
-			
-			scheduleData.setToEmailId(toEmailId);
-			scheduleData.setRecipientAddress(myList);
-
-			
-			
-			scheduleData.setEnvironmentName(scheduleEvent.getEnvironmentName());
-			scheduleData.setTypeOfReport(scheduleEvent.getTypeOfReport());
+			scheduleData.setTypeOfEvent(scheduleEvent.getTypeOfEvent());
 			
 			scheduleData.setOutputFileName(scheduleEvent.getNameOfScheduledTask());
 			scheduleData.setFileFormat(scheduleEvent.getOutputFileFormat());
@@ -100,6 +75,29 @@ public class InitiateServlet extends HttpServlet{
 			
 			//THIS IS SET TO SKIP FEW VALIDATION
 			scheduleData.setAlreadyCreated(true);
+			
+			
+			if(scheduleData.getTypeOfEvent().equalsIgnoreCase(EnumConstants.EMAILTYPEEVENT.getConstantType())){
+				//GETTING EMAIL IDS
+				String[] emailIds= scheduleEvent.getRecipientAddress().split(";");
+				String toEmailId=emailIds[0],
+					   listOfaddresses=emailIds[1];
+				String recepientAddresses =listOfaddresses.replace("[","").replace("]","");
+				ArrayList<String> myList = new ArrayList<String>();
+				
+				logger.info("InitiateServlet: RecipientAddress we get is :"+recepientAddresses+" and size:"+recepientAddresses.length());
+				if(recepientAddresses.length()>0){
+					myList.addAll(Arrays.asList(recepientAddresses.split(",")));
+				}
+				logger.info("InitiateServlet: RecipientAddress we get is :"+myList.toString());
+				scheduleData.setToEmailId(toEmailId);
+				scheduleData.setRecipientAddress(myList);
+			}else{
+				logger.info("InitiateServlet: FTP DETAILS we get is :"+scheduleEvent.getFtpRequest().toString());
+				scheduleData.setFtpRequest(scheduleEvent.getFtpRequest());
+			}
+			
+			
 			
 			SchedulerResponse  response=schedulerApis.scheduleEvent(scheduleData);
 			

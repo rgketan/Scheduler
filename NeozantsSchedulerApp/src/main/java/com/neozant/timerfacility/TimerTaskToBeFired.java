@@ -13,8 +13,10 @@ import org.quartz.JobKey;
 
 import com.neozant.enums.EnumConstants;
 import com.neozant.helper.DataStorageHelper;
+import com.neozant.helper.FtpServerHelper;
 import com.neozant.helper.ServerHelper;
 import com.neozant.mail.EmailAttachmentSender;
+import com.neozant.request.FtpRequest;
 import com.neozant.request.ScheduleDataRequest;
 import com.neozant.storage.DetailsOfScheduledEventObject;
 import com.neozant.storage.ScheduledEventObject;
@@ -44,18 +46,39 @@ public class TimerTaskToBeFired implements Job{
 		//ServerHelper helper=new ServerHelper();
 		String outputFilePath=null;
 		String result="EXECUTED",
-			   emailStatus="SENT",
-			   fileUpload="UPLOADED";
+			   status="UPLOADED";
 		try{
 			ServerHelper helper=ServerHelper.getServerHelperObject();
 			outputFilePath=helper.perfomAction(scheduleData);
 			
 			logger.info("TimerTaskToBeFired:: OUTPUT FILE WE ARE GOING TO ATTACH IS ::" +outputFilePath);
 			
+			
+			if(scheduleData.getTypeOfEvent().equalsIgnoreCase(EnumConstants.FTPTYPEEVENT.getConstantType())){
+				
+				FtpRequest ftpRequest=scheduleData.getFtpRequest();
+				logger.info("TimerTaskToBeFired:: UPLOADING FILE TO FTP SERVER :: HOST:" +ftpRequest.getFtpHost()
+						    +"  USERNAME:" +ftpRequest.getFtpUsername()
+							+ "	 PASSWORD:" +ftpRequest.getFtpPassword()
+							+ "  PATH:"+ftpRequest.getFtpFilePath());
+				
+				FtpServerHelper ftpServerHelper=new FtpServerHelper();
+				boolean fileUploadStatus=ftpServerHelper.uploadFIleToFtpServer(ftpRequest, outputFilePath);
+				
+				if(!fileUploadStatus){
+					status="FAILED TO UPLOAD TO FTP SERVER";
+				}else{
+					status="UPLOADED";
+				}
+				
+			}else{
 			//SENDING EMAIL
-			boolean emailStatusFlag=sendEmail(outputFilePath,scheduleData.getToEmailId(),null,null,scheduleData.getRecipientAddress());
-			if(!emailStatusFlag){
-				emailStatus="Failed to send";
+				boolean emailStatusFlag=sendEmail(outputFilePath,scheduleData.getToEmailId(),null,null,scheduleData.getRecipientAddress());
+				if(!emailStatusFlag){
+					status="Failed to send";
+				}else{
+					status="SENT";
+				}
 			}
 			
 			//TODO: REMOVING FOR NOW
@@ -71,14 +94,19 @@ public class TimerTaskToBeFired implements Job{
 			
 		}catch(Exception ex){
 			result="FAILED";
-			emailStatus="Failed to send";
+			
+			if(scheduleData.getTypeOfEvent().equalsIgnoreCase(EnumConstants.FTPTYPEEVENT.getConstantType()))
+				status="FAILED TO UPLOAD TO FTP SERVER";
+			else
+				status="FAILED TO SEND EMAIL";
+			
 			sendEmail(null,scheduleData.getToEmailId(),"ERROR WHILE FIRING SCHEDULE EVENT","REASON FOR FAILURE IS:"+ex.getMessage(),scheduleData.getRecipientAddress());
 			//System.out.println("TimerTaskToBeFired:: ERROR WHILE EXECUTING TASK");
-			logger.error("TimerTaskToBeFired:: ERROR WHILE EXECUTING TASK|| SENDING EMAIL TO");
+			logger.error("TimerTaskToBeFired:: ERROR WHILE EXECUTING TIMER TASK|| SENDING EMAIL TO");
 			ex.printStackTrace();
 		}
 		//String eventName,String emailStatus,String executedTime,String ouputFileName,String result
-		addDetailsScheduleEvent(scheduleData.getOutputFileName(),emailStatus,outputFilePath,result,fileUpload);
+		addDetailsScheduleEvent(scheduleData.getOutputFileName(),outputFilePath,result,status);
 		
 	}
 	
@@ -108,7 +136,7 @@ public class TimerTaskToBeFired implements Job{
 	}
 
 	
-	private void addDetailsScheduleEvent(String eventName,String emailStatus,String ouputFileName,String result,String ftpStatus){
+	private void addDetailsScheduleEvent(String eventName,String ouputFileName,String result,String eventStatus){
 		DataStorageHelper dataStorageHelper=DataStorageHelper.getDataStorageHelper();
 		ScheduledEventObject scheduledEventObject=dataStorageHelper.getEvent(eventName);
 		if(scheduledEventObject!=null){
@@ -124,12 +152,12 @@ public class TimerTaskToBeFired implements Job{
 			   
 			DetailsOfScheduledEventObject detailScheduledEventObject=new DetailsOfScheduledEventObject();
 			
-			detailScheduledEventObject.setEmailStatus(emailStatus);
+			
 			detailScheduledEventObject.setExecutedTime(dateFormat.format(date));
 			detailScheduledEventObject.setOuputFileName(ouputFileName);
 			detailScheduledEventObject.setResult(result);
 			
-			detailScheduledEventObject.setFtpStatus(ftpStatus);
+			detailScheduledEventObject.setStatus(eventStatus);
 			dataStorageHelper.addNewEventDetails(eventName, detailScheduledEventObject);
 			
 			
