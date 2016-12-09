@@ -234,7 +234,18 @@ kesa.AdminPanelView.prototype={
 				timerData["date"] =dataArr[2];
 				timerData["month"] =dataArr[1];
 				timerData["year"] =dataArr[0];
+				
+				
+				//TODO: HARDCODING FOR NOW TESTING 
+				//daily,weekday,onetime,selectivedays,specificdate
+				this.configurationObject["REPEAT_ON_CODE"]="selectivedays";
+				
 				timerData["repeatOn"] =this.configurationObject["REPEAT_ON_CODE"];
+				
+				
+				//SUN,MON,TUE,WED,THU,FRI,SAT
+				timerData["timerInfo"] ="THU";
+				
 				if(timeArr.length === 2){
 				
 					timerData["minutes"] =timeArr[1];
@@ -296,7 +307,7 @@ kesa.AdminPanelView.prototype={
 			////console.log(resp);
 			var strHTML ="";
 			for(var i =0;i<resp.length;i++){
-				strHTML += '<div><input type="radio" name="optFilePathRadio" value="'+resp[i]+'" checked="checked">'+resp[i]+'</div>';
+				strHTML += '<div><input type="radio" name="optFilePathRadio" value="'+resp[i].absolutePath+'" checked="checked">'+resp[i].fileName+'</div>';
 			}
 			$("#kesaFileRadioList").append(strHTML);
 			this.configurationObject["SERVER_FILE_PATH"] = ""; 
@@ -814,7 +825,7 @@ kesa.AdminPanelView.prototype={
 				this.processStep++; //KV
 				this.renderProcessSteps();
 				
-				this.onfileNamesFetchedResponse(response.listOfSourceFiles);
+				this.onfileNamesFetchedResponse(response.listOfSourceFileDetails);
 				
 				$("#kesaEmailIds").val(response.recipientAddress);//=response.recipientAddress;
 				

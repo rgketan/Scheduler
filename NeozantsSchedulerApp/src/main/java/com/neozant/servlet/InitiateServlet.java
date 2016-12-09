@@ -71,7 +71,7 @@ public class InitiateServlet extends HttpServlet{
 			scheduleData.setSqlFilePath(scheduleEvent.getFileToExecute());
 			
 			//POPULATING TIMER DATA
-			scheduleData.setTimerData(getTimerData(scheduleEvent.getDateAndTimeInString(), scheduleEvent.getTimerRepeatOn()));
+			scheduleData.setTimerData(getTimerData(scheduleEvent.getDateAndTimeInString(), scheduleEvent.getTimerRepeatOn(),scheduleEvent.getTimerInfo()));
 			
 			//THIS IS SET TO SKIP FEW VALIDATION
 			scheduleData.setAlreadyCreated(true);
@@ -113,7 +113,7 @@ public class InitiateServlet extends HttpServlet{
 	
 	
 	//creating timer data object from data stored in SQLITE database  
-	private TimerData getTimerData(String timerString,String repeatOn){
+	private TimerData getTimerData(String timerString,String repeatOn,String timerInfo){
 		
 		String[] splitString= timerString.split(",");
 		
@@ -135,6 +135,8 @@ public class InitiateServlet extends HttpServlet{
 			   
 			   
 			   timerData.setRepeatOn(repeatOn);
+			   
+			   timerData.setTimerInfo(timerInfo);
 		   
 		   return timerData;
 	}

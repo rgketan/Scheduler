@@ -12,7 +12,7 @@ public class TimerData {
 	
 	private String amPmMarker;
 	private String repeatOn;
-	
+	private String timerInfo; //FOR TIMER AT SPECIFIC DAYS OF WEEK
 	
 	public TimerData() {
 		// TODO Auto-generated constructor stub
@@ -107,7 +107,15 @@ public class TimerData {
 		this.repeatOn = repeatOn;
 	}
 
+	public String getTimerInfo() {
+		return timerInfo;
+	}
 
+	public void setTimerInfo(String timerInfo) {
+		this.timerInfo = timerInfo;
+	}
+	
+	
 	public String toString(){
 		String dateInString = this.getDate() + ":"
 				+ this.getMonth() + ":" 

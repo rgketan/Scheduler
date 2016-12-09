@@ -28,6 +28,7 @@ import com.neozant.request.ScheduleDataRequest;
 import com.neozant.request.TimerData;
 import com.neozant.response.ConfigurationResponse;
 import com.neozant.response.SchedulerResponse;
+import com.neozant.response.SourceFileDetailResponse;
 import com.neozant.storage.ScheduledEventObject;
 import com.neozant.timerfacility.TimerTaskManager;
 
@@ -193,7 +194,6 @@ public class ServerHelper {
 			config.setResponseStatus("failure");
 			config.setDetailMessageOnFailure("SOURCE DIRECTORY WE GET IS:"+sourceDirectory+"|| DESTINATION :"+destinationDirectory);
 		}else{
-			config.setResponseStatus("success");
 			
 			ArrayList<String> listOfFormat=new ArrayList<String>();
 			listOfFormat.add(EnumConstants.XLSFILETYPE.getConstantType());
@@ -214,15 +214,33 @@ public class ServerHelper {
 			
 			config.setRecipientAddress(arrayList);
 			
-			ArrayList<String> listOfSourceFile=new ArrayList<String>();
+			//ArrayList<String> listOfSourceFile=new ArrayList<String>();
 			File f1 = new File(sourceDirectory);
 			
 			File[] fileObjects = f1.listFiles();
+			
+			ArrayList<SourceFileDetailResponse> listOfSourceFileDetails=new ArrayList<SourceFileDetailResponse>();
+			
 			 for(File file : fileObjects){
-				 listOfSourceFile.add(file.getAbsolutePath());
-				 logger.info("SOURCE FILE PATH WE GET::"+file.getAbsolutePath());
+				 
+				 if(isFileExtensionSql(file.getName())){
+					 
+						 SourceFileDetailResponse sourceFileDetailResponse=new SourceFileDetailResponse();
+						 
+						 sourceFileDetailResponse.setAbsolutePath(file.getAbsolutePath());
+						 sourceFileDetailResponse.setFileName(file.getName());
+						 
+						 listOfSourceFileDetails.add(sourceFileDetailResponse);
+						 
+						 logger.info("SQL FILE ADDING "+file.getAbsolutePath());
+				 }else{
+			
+					 logger.info( "NOT AN SQL FILE::"+file.getAbsolutePath());
+				 }
 			 }
-			config.setListOfSourceFiles(listOfSourceFile);
+			 
+			 
+			config.setListOfSourceFileDetails(listOfSourceFileDetails);
 			
 			
 			String ftphost=readKeyValueFromPropertyFile(EnumConstants.FTPPROPERTYFILE.getConstantType(),"ftphost"),
@@ -238,6 +256,9 @@ public class ServerHelper {
 			
 			config.setFtpRequest(ftpRequest);
 			
+			
+			
+			config.setResponseStatus("success");
 			
 		}
 		return config;
@@ -386,11 +407,40 @@ public class ServerHelper {
 		
 		scheduledEventObject.setTypeOfEvent(scheduleData.getTypeOfEvent());
 		
+		scheduledEventObject.setTimerInfo(scheduleData.getTimerData().getTimerInfo());
+		
 		return scheduledEventObject;
 	}
 	
 	
 	
+	
+	private boolean isFileExtensionSql(String fileName) {
+        boolean isSqlFile = false;
+        
+        if(fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0){
+        	
+        	String fileExt=fileName.substring(fileName.lastIndexOf(".")+1);
+        	
+        	System.out.println("EXT::"+fileExt);
+        	
+           if(fileExt.equalsIgnoreCase("sql")){
+        	   
+        	   isSqlFile=true;
+        	   
+        	   System.out.println("EXTENSION FOUND::SQL FILE");
+           }else{
+        	   
+        	   System.out.println("EXTENSION FOUND::BUT AN SQL FILE");
+           }
+        
+        }else{
+        	
+        	System.out.println("EXTENSION NOT FOUND::::");
+        }
+        
+        return isSqlFile;
+    }
 	
 	//CHANGES
 	

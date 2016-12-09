@@ -119,7 +119,7 @@ public class SchedulerApis {
 	public SchedulerResponse databaseConnectivity(){
 		
 		SchedulerResponse schedulerResponse=new SchedulerResponse();
-		Connection conn=null;
+		/*Connection conn=null;
 		
 		try{
 			ServerHelper helper=ServerHelper.getServerHelperObject();
@@ -138,8 +138,8 @@ public class SchedulerApis {
 			//schedulerResponse.setDetailMessageOnFailure("Could not establish the connection with D/B");
 			schedulerResponse.setResponseStatus("failure");
 		}
-		
-		//schedulerResponse.setResponseStatus("success");
+		*/
+		schedulerResponse.setResponseStatus("success");
 		return schedulerResponse;
 	}
 	

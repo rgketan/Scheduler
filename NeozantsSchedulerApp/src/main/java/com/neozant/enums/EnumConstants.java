@@ -30,6 +30,8 @@ public enum EnumConstants {
 	DAILY("daily"),
 	WEEKDAY("weekday"),
 	ONETIME("onetime"),
+	SELECTIVEDAYS("selectivedays"),
+	SPECIFICDATE("specificdate"),
 	
 	//ftp details
 	/*FTPHOST("ftphost"),
