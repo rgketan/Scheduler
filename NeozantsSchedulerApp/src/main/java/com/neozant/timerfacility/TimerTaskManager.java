@@ -133,6 +133,8 @@ public class TimerTaskManager {
 				Trigger jobTrigger ;
 				
 				
+				//STRING FOR SCHEDULING SCHEDULER JOB
+				String cronSchedulerString="";
 				
 				EnumConstants enconst=EnumConstants.valueOf(timerData.getRepeatOn().toUpperCase());
 				
@@ -147,12 +149,12 @@ public class TimerTaskManager {
 					   			.build();
 					break;
 				case WEEKDAY:
-					logger.info("TimerTaskManager::SCHEDULING FOR WEEKDAY TIMER");
-					String expressionForWeekdayTimer="0 "+minutes+" "+hours+" ? * MON-FRI";
+					cronSchedulerString="0 "+minutes+" "+hours+" ? * MON-FRI";
+					logger.info("TimerTaskManager::SCHEDULING FOR WEEKDAY TIMER:"+cronSchedulerString);
 					jobTrigger= TriggerBuilder.newTrigger()
 							    .withIdentity(trigID.toString(), this.apiServiceGroupID)
 							    .startAt(date)
-							    .withSchedule(CronScheduleBuilder.cronSchedule(expressionForWeekdayTimer))
+							    .withSchedule(CronScheduleBuilder.cronSchedule(cronSchedulerString))
 							    .build();
 					break;
 				case ONETIME:
@@ -163,6 +165,37 @@ public class TimerTaskManager {
 		   						.withSchedule(SimpleScheduleBuilder.simpleSchedule())
 		   						.build();
 				    break;
+				    
+				case SELECTIVEDAYS:
+					//logger.info("TimerTaskManager::SCHEDULING FOR SPECIFIC DAYS IN WEEK");
+					cronSchedulerString="0 "+minutes+" "+hours+" ? * "+timerData.getTimerInfo();
+					logger.info("TimerTaskManager::SCHEDULING FOR SPECIFIC DAYS IN WEEK:"+cronSchedulerString);
+					jobTrigger= TriggerBuilder.newTrigger()
+							    .withIdentity(trigID.toString(), this.apiServiceGroupID)
+							    .startAt(date)
+							    .withSchedule(CronScheduleBuilder.cronSchedule(cronSchedulerString))
+							    .build();
+					break;
+				case SPECIFICDATE:
+					//logger.info("TimerTaskManager::SCHEDULING FOR SPECIFIC DATE IN MONTH");
+					cronSchedulerString="0 "+minutes+" "+hours+" "+timerData.getDate()+" * ?";
+					
+					logger.info("TimerTaskManager::SCHEDULING FOR SPECIFIC DATE IN MONTH:"+cronSchedulerString);
+					jobTrigger= TriggerBuilder.newTrigger()
+						    .withIdentity(trigID.toString(), this.apiServiceGroupID)
+						    .startAt(date)
+						    .withSchedule(CronScheduleBuilder.cronSchedule(cronSchedulerString))
+						    .build();
+					
+					/*trigger = newTrigger()
+				    .withIdentity("trigger3", "group1")
+				    .startNow()
+				    .withSchedule(cronSchedule("0 0 15 5 * ?")) // fire on the 5th day of every month at 15:00
+				    .build();*/
+					
+					
+					break;
+				    
 				default:
 					logger.info("TimerTaskManager::SCHEDULING FOR DEFAULT ONE TIMER");
 					jobTrigger= TriggerBuilder.newTrigger()

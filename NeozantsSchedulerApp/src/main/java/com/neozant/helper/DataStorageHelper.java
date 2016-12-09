@@ -91,7 +91,8 @@ public class DataStorageHelper {
 			   uniqueId=scheduledEventObject.getUniqueId(),
 			   status=scheduledEventObject.getStatus(),
 			   jobKeyName=scheduledEventObject.getJobKeyName(),
-			   typeOfEvent=scheduledEventObject.getTypeOfEvent();
+			   typeOfEvent=scheduledEventObject.getTypeOfEvent(),
+			   timerInfo=scheduledEventObject.getTimerInfo();
 		   
 		   
 		
@@ -117,6 +118,8 @@ public class DataStorageHelper {
 			
 			stmt.setString(9,typeOfEvent);
 			stmt.setString(10,receipientAssress);
+			
+			stmt.setString(11,timerInfo);
 			
 			
 			stmt.executeUpdate();
@@ -245,6 +248,7 @@ public class DataStorageHelper {
 
 					   		scheduledEventObject.setTypeOfEvent(rs.getString("TYPE_OF_EVENT"));
 					   		
+					   		scheduledEventObject.setTimerInfo(rs.getString("TIMER_INFO"));
 					   		if(rs.getString("TYPE_OF_EVENT").equalsIgnoreCase(EnumConstants.EMAILTYPEEVENT.getConstantType())){
 					   			scheduledEventObject.setRecipientAddress(rs.getString("RECIPIENT_ADDRESS"));
 					   		}else{
@@ -308,6 +312,7 @@ public class DataStorageHelper {
 					   		
 					   		scheduledEventObject.setFtpRequest(getFtpEventDetail(rs.getString("NAME")));
 					   		
+					   		scheduledEventObject.setTimerInfo(rs.getString("TIMER_INFO"));
 					   		
 					   		if(rs.getString("TYPE_OF_EVENT").equalsIgnoreCase(EnumConstants.EMAILTYPEEVENT.getConstantType())){
 					   			scheduledEventObject.setRecipientAddress(rs.getString("RECIPIENT_ADDRESS"));
@@ -365,6 +370,8 @@ public class DataStorageHelper {
 		   		scheduledEventObject.setJobKeyName(rs.getString("JOB_KEY_NAME"));
 		   		
 		   		scheduledEventObject.setTypeOfEvent(rs.getString("TYPE_OF_EVENT"));
+		   		
+		   		scheduledEventObject.setTimerInfo(rs.getString("TIMER_INFO"));
 		   		
 		   		if(rs.getString("TYPE_OF_EVENT").equalsIgnoreCase(EnumConstants.EMAILTYPEEVENT.getConstantType())){
 		   			scheduledEventObject.setRecipientAddress(rs.getString("RECIPIENT_ADDRESS"));
@@ -449,15 +456,12 @@ public class DataStorageHelper {
 	   			ftpRequest=new FtpRequest();
 		   		ResultSet rs=stmt.getResultSet();
 		   		  
-		   		
-		   		ftpRequest.setFtpHost(rs.getString("HOST_NAME"));
-		   		
-		   		ftpRequest.setFtpUsername(rs.getString("HOST_USERNAME"));
-		   		
-		   		ftpRequest.setFtpPassword(rs.getString("HOST_PASSWORD"));
-		   		
-		   		ftpRequest.setFtpFilePath(rs.getString("PATH_URL"));
-		   		
+		   		if(rs.getRow()>0){
+			   		ftpRequest.setFtpHost(rs.getString("HOST_NAME"));
+			   		ftpRequest.setFtpUsername(rs.getString("HOST_USERNAME"));
+			   		ftpRequest.setFtpPassword(rs.getString("HOST_PASSWORD"));
+			   		ftpRequest.setFtpFilePath(rs.getString("PATH_URL"));
+		   		}
 		   		rs.close();
 	   		 }
 	   

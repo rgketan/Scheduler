@@ -36,6 +36,9 @@ public class ScheduledEventObject {
 	private FtpRequest ftpRequest;
 	
 	
+	//TIMER INFO
+	private String timerInfo;
+	
 	public ScheduledEventObject(){
 		
 		//listOfDetailScheduledObject=new ArrayList<DetailsOfScheduledEventObject>();
@@ -141,7 +144,13 @@ public class ScheduledEventObject {
 	public void setFtpRequest(FtpRequest ftpRequest) {
 		this.ftpRequest = ftpRequest;
 	}
-	
-	
+
+	public String getTimerInfo() {
+		return timerInfo;
+	}
+
+	public void setTimerInfo(String timerInfo) {
+		this.timerInfo = timerInfo;
+	}
 	
 }

@@ -208,10 +208,30 @@
  							 <input type="radio" name="kesa-repeat" value="YEARLY" kesa-data="2_YEARLY">YEARLY<br>
  							 <input type="radio" name="kesa-repeat" value="ONLY ONCE" kesa-data="3_NONE" checked>ONLY ONCE<br>
  							 --> 
+
+ 							 <!--
  							 
  							 <input type="radio" name="kesa-repeat" value="oneTime" kesa-data="ONETIME" checked="checked" >One Time<br>
  							 <input type="radio" name="kesa-repeat" value="daily" kesa-data="DAILY">Daily<br>
- 							 <input type="radio" name="kesa-repeat" value="weekDay" kesa-data="WEEKDAY">Working Day<br>
+ 							 <input type="radio" name="kesa-repeat" value="weekDay" kesa-data="WEEKDAY">Working Day<br> -->
+
+ 							 <select id="time_frequency_meta_data">
+ 							 	<option>oneTime</option>
+ 							 	<option>selectiveDays</option>
+ 							 	<option>specificDate</option>
+ 							 </select>
+
+ 							 <div name="kesa-day" id="showWeekDaysOption" style="display:none">
+ 							 <input type="checkbox" name="kesa-day" value="MON" >MONDAY<br>
+ 							 <input type="checkbox" name="kesa-day" value="TUE" >TUESDAY<br>
+ 							 	<input type="checkbox" name="kesa-day" value="WED" >WEDNESDAY<br>
+ 							 	<input type="checkbox" name="kesa-day" value="THU" >THURSDAY<br>
+ 							 	<input type="checkbox" name="kesa-day" value="FRI" >FRIDAY<br>
+ 							 	<input type="checkbox" name="kesa-day" value="SAT" >SATURDAY<br>
+ 							 	<input type="checkbox" name="kesa-day" value="SUN" >SUNDAY<br>
+ 							 	
+
+ 							 </div>
  							 <!-- 
  							 <input type="checkbox" name="kesa-day" value="3_WED" >WEDNESDAY<br>
  							 <input type="checkbox" name="kesa-day" value="4_THU" >THURSDAY<br>
@@ -255,7 +275,7 @@
 					On Date: <span id="dateConfirmation" class="dfn">2nd June 2016</span><br/>
 					On Time: <span id="timeConfirmation" class="dfn">2:00:PM</span><br/>
 					OutPut Extension Would be : <span id="outputConfirmation" class="dfn">CSV</span><br/>
-					Repeated on <span id='repeatConfirmation' class='dfn'></span> basis<br/>
+					Repeated on <span id='repeatConfirmation' class='dfn'>basis</span> <br/>
 					Type of Event: <span id='typeOfEvent' class='dfn'>FTP</span><br/>
 					<span id="detailConfirmation" class="dfn">CSV,abc@abc.com</span><br/>
 					

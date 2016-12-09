@@ -14,8 +14,9 @@ public enum EnumQueriesToExecute {
 	                   " UNIQUE_ID           TEXT    NOT NULL, " +
 	                   " STATUS		         TEXT    NOT NULL, " +
 	                   " JOB_KEY_NAME		 TEXT            , " +
-	                   " TYPE_OF_EVENT      TEXT    NOT NULL, " +    //FTP OR EMAIL
-	                   " RECIPIENT_ADDRESS   CHAR(50))"),            //NULL IF FTP
+	                   " TYPE_OF_EVENT       TEXT    NOT NULL, " +    //FTP OR EMAIL
+	                   " RECIPIENT_ADDRESS   CHAR(50),"+     //NULL IF FTP
+	                   " TIMER_INFO 	TEXT)"),            
 	
 	
 	CREATEFTPEVENTDETAILS("CREATE TABLE IF NOT EXISTS FTPEVENTDETAILS " +
@@ -37,8 +38,8 @@ public enum EnumQueriesToExecute {
 			            " FOREIGN KEY(EVENT_NAME) REFERENCES EVENT(NAME))"),
 			            
 			            
-	INSERTEVENT("INSERT OR REPLACE INTO EVENT (NAME,FILE_TO_EXECUTE,DATE_AND_TIME,OUTPUT_FILE_FORMAT,TIME_REPEAT_ON,UNIQUE_ID,STATUS,JOB_KEY_NAME,TYPE_OF_EVENT,RECIPIENT_ADDRESS) " +
-            	"VALUES (?,?,?,?,?,?,?,?,?,?)"),		  
+	INSERTEVENT("INSERT OR REPLACE INTO EVENT (NAME,FILE_TO_EXECUTE,DATE_AND_TIME,OUTPUT_FILE_FORMAT,TIME_REPEAT_ON,UNIQUE_ID,STATUS,JOB_KEY_NAME,TYPE_OF_EVENT,RECIPIENT_ADDRESS,TIMER_INFO) " +
+            	"VALUES (?,?,?,?,?,?,?,?,?,?,?)"),		  
     
     INSERTEVENTDETAIL("INSERT OR REPLACE INTO EVENTDETAILS (EVENT_NAME,EXECUTED_TIME,RESULT,OUTPUT_FILE_NAME,STATUS) " +
                     	"VALUES (?,?,?,?,?)"),      

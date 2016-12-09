@@ -95,6 +95,7 @@ public class SchedulerApis {
 				ServerHelper helper=ServerHelper.getServerHelperObject();
 				
 				schedulerResponse=helper.hitTimerTask(scheduleData, nextId());
+				successFlag =schedulerResponse.getResponseStatus();
 				
 			} catch (Exception ex) {
 				logger.error("SchedulerApis:: ERROR UNABLE TU SCHEDULE EVENT: " + ex.getMessage());

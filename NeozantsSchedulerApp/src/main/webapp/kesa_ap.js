@@ -63,7 +63,9 @@ kesa.AdminPanelView = function(){
 			"EXTENSION":"",
 			"TYPE_OF_EVENT":"",
 			"EMAIL":"",
-			"RECIPIENT_ADDRESS":""
+			"RECIPIENT_ADDRESS":"",
+			"FREQUENCY_META_DATA_DETAIL":"",
+			"FREQUENCY_META_DATA":"oneTime"  //DEFAULT VALUE
 	};
 	
 	this.ftpObject={
@@ -188,6 +190,8 @@ kesa.AdminPanelView.prototype={
 			$("#kesaBackBtn").on("click",this.processStepPrevBtnClicked.bind(this));
 			$("#kesaDoneBtn").on("click",this.processStepDoneBtnClicked.bind(this));
 
+			$("#time_frequency_meta_data").change(this.trackTheSelectionOfRange.bind(this));
+
 			//kesa-earlier-process-tbody
 
 			$("#fetch-all-records").on("click",this.fetchAllRecordsClicked.bind(this));
@@ -225,6 +229,31 @@ kesa.AdminPanelView.prototype={
 			$("#kesaTestFTPConnectionBtn").on("click",this.testFTPConnectivity.bind(this));
 			
 		},
+
+		trackTheSelectionOfRange :function(evt){
+			var dropDownValueEnum ={
+				"DAYS":"selectiveDays",
+				"SPECIFIC_DATE":"specificDate",
+				"SELECT":"oneTime"
+			}
+			$("#showWeekDaysOption").hide();
+			this.configurationObject["FREQUENCY_META_DATA"] = undefined;
+			for(var key in dropDownValueEnum) {
+				if(dropDownValueEnum[key].toUpperCase() === evt.currentTarget.value.toUpperCase()){
+					// matches the value
+					this.configurationObject["FREQUENCY_META_DATA"]  = dropDownValueEnum[key];
+					
+					console.log("FREQUENCY_META_DATA::"+this.configurationObject["FREQUENCY_META_DATA"]);
+					
+					
+					if (evt.currentTarget.value === dropDownValueEnum.DAYS) {
+						$("#showWeekDaysOption").show();
+					}
+					break;
+				}
+			}
+			console.log(evt.currentTarget.value);
+		},
 		processStepDoneBtnClicked :function(){
 			
 			var dataArr = this.configurationObject["DATE"].split("-");
@@ -234,7 +263,9 @@ kesa.AdminPanelView.prototype={
 				timerData["date"] =dataArr[2];
 				timerData["month"] =dataArr[1];
 				timerData["year"] =dataArr[0];
-				timerData["repeatOn"] =this.configurationObject["REPEAT_ON_CODE"];
+				
+				timerData["repeatOn"] =this.configurationObject["FREQUENCY_META_DATA"];
+				timerData["timerInfo"] =this.configurationObject["FREQUENCY_META_DATA_DETAIL"];
 				if(timeArr.length === 2){
 				
 					timerData["minutes"] =timeArr[1];
@@ -244,6 +275,7 @@ kesa.AdminPanelView.prototype={
 			}
 			
 			
+			console.log("TIMER DATA WE GET IS::",timerData);
 			
 			
 			var reqObject ={
@@ -296,7 +328,7 @@ kesa.AdminPanelView.prototype={
 			////console.log(resp);
 			var strHTML ="";
 			for(var i =0;i<resp.length;i++){
-				strHTML += '<div><input type="radio" name="optFilePathRadio" value="'+resp[i]+'" checked="checked">'+resp[i]+'</div>';
+				strHTML += '<div><input type="radio" name="optFilePathRadio" value="'+resp[i].absolutePath+'" checked="checked">'+resp[i].fileName+'</div>';
 			}
 			$("#kesaFileRadioList").append(strHTML);
 			this.configurationObject["SERVER_FILE_PATH"] = ""; 
@@ -393,6 +425,8 @@ kesa.AdminPanelView.prototype={
 			$("#configurationNotFilledMsg").html("");
 			
 			
+			var htmlMessage="";
+			
 			//console.log("CONFIGURATION TESTINGG");
 			if(this.configurationObject["SERVER_FILE_PATH"] != undefined &&
 					this.configurationObject["TIME"] != undefined &&
@@ -414,7 +448,7 @@ kesa.AdminPanelView.prototype={
 				
 				var validFlag=false;
 				
-				var detailString="";
+				var detailString="Please fill in all the configuration";
 				
 				//console.log("EVENT VALUE WE GET IS::"+this.configurationObject["TYPE_OF_EVENT"]);
 				
@@ -433,6 +467,9 @@ kesa.AdminPanelView.prototype={
 							}
 					}
 					
+					if(!validFlag){
+						htmlMessage="ENTER VALID EMAIL ID";
+					}
 				}else{
 					  
 					
@@ -468,10 +505,39 @@ kesa.AdminPanelView.prototype={
 						validFlag=true;
 					}
 					
+					
+					
 				}
 				
 				
 				
+				//check for FREQUENCY DAY's
+				if (!this.configurationObject["FREQUENCY_META_DATA"]){
+					validFlag = false;		
+				}
+				else if (validFlag && this.configurationObject["FREQUENCY_META_DATA"]){
+					if(this.configurationObject["FREQUENCY_META_DATA"].toUpperCase() === "SELECTIVEDAYS") {
+						var checkedCheckboxesValues = 
+						    $('input:checkbox[name="kesa-day"]:checked')
+						        .map(function() {
+						            return $(this).val();
+						        }).get();
+
+
+						this.configurationObject["FREQUENCY_META_DATA_DETAIL"] = checkedCheckboxesValues.toString(); 
+						
+						console.log("FREQUENCY_META_DATA_DETAIL WE GET IS::"+this.configurationObject["FREQUENCY_META_DATA_DETAIL"]);
+						
+						if(checkedCheckboxesValues.toString() == undefined ||
+								checkedCheckboxesValues.toString() == ""){
+							
+							validFlag = false;
+							htmlMessage="Select atleast One Day";
+						}
+						
+					}//DAYS
+
+				}
 				
 				
 			//console.log("VALID FLAG WE GET IS::::"+validFlag);
@@ -498,17 +564,20 @@ kesa.AdminPanelView.prototype={
 						
 						
 						$('#repeatConfirmation').hide();
-							$('#repeatConfirmation').show();
-							$('#repeatConfirmation').html(this.configurationObject["REPEAT_ON"]);
+						$('#repeatConfirmation').show();
+						console.log("===>FREQUENCY_META_DATA_DETAIL::"+this.configurationObject["FREQUENCY_META_DATA_DETAIL"]);
+						$('#repeatConfirmation').html(this.configurationObject["FREQUENCY_META_DATA"] +" : "+this.configurationObject["FREQUENCY_META_DATA_DETAIL"]);
+
+
 						
 				}else{
 					
-					$("#configurationNotFilledMsg").html("ENTER VALID EMAIL ID");
+					$("#configurationNotFilledMsg").html(htmlMessage);
 				}
 				
 			}
 			else{
-				$("#configurationNotFilledMsg").html("Please fill in all the configuration");
+				$("#configurationNotFilledMsg").html(htmlMessage);
 			}
 			
 		},
@@ -641,7 +710,13 @@ kesa.AdminPanelView.prototype={
 					s1 += '<td>'+ response.scheduledEventObject[i].fileToExecute + '</td>';
 					s1 += '<td>'+ response.scheduledEventObject[i].dateAndTimeInString + '</td>';
 					s1 += '<td>'+ response.scheduledEventObject[i].outputFileFormat + '</td>';
-					s1 += '<td>'+ response.scheduledEventObject[i].timerRepeatOn + '</td>';
+					s1 += '<td>'+ response.scheduledEventObject[i].timerRepeatOn ;
+					
+					if(response.scheduledEventObject[i].timerRepeatOn=="selectiveDays")
+						s1 +="["+response.scheduledEventObject[i].timerInfo+"]"+ '</td>';
+					else
+						s1 +='</td>';
+					
 					s1 += '<td>'+ response.scheduledEventObject[i].typeOfEvent + '</td>';
 					
 					var statusOfEvent="";
@@ -814,7 +889,7 @@ kesa.AdminPanelView.prototype={
 				this.processStep++; //KV
 				this.renderProcessSteps();
 				
-				this.onfileNamesFetchedResponse(response.listOfSourceFiles);
+				this.onfileNamesFetchedResponse(response.listOfSourceFileDetails);
 				
 				$("#kesaEmailIds").val(response.recipientAddress);//=response.recipientAddress;
 				

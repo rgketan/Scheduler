@@ -7,7 +7,7 @@ import com.neozant.request.FtpRequest;
 
 public class ConfigurationResponse extends GenericResponse{
 
-	private ArrayList<String> listOfSourceFiles;
+	private ArrayList<SourceFileDetailResponse> listOfSourceFileDetails;
 	private String outputFilePath;
 	private String sourceFilePath;
 	private ArrayList<String> fileFormatSupported;
@@ -18,22 +18,15 @@ public class ConfigurationResponse extends GenericResponse{
 
 	}
 
-	public ConfigurationResponse(ArrayList<String> listOfSourceFiles,
+	public ConfigurationResponse(ArrayList<SourceFileDetailResponse> listOfSourceFiles,
 			String outputFilePath, ArrayList<String> fileFormatSupported) {
 		super();
-		this.listOfSourceFiles = listOfSourceFiles;
+		this.listOfSourceFileDetails = listOfSourceFiles;
 		this.outputFilePath = outputFilePath;
 		this.fileFormatSupported = fileFormatSupported;
 		
 	}
 
-	public ArrayList<String> getListOfSourceFiles() {
-		return listOfSourceFiles;
-	}
-
-	public void setListOfSourceFiles(ArrayList<String> listOfSourceFiles) {
-		this.listOfSourceFiles = listOfSourceFiles;
-	}
 
 	public String getOutputFilePath() {
 		return outputFilePath;
@@ -74,6 +67,15 @@ public class ConfigurationResponse extends GenericResponse{
 
 	public void setFtpRequest(FtpRequest ftpRequest) {
 		this.ftpRequest = ftpRequest;
+	}
+
+	public ArrayList<SourceFileDetailResponse> getListOfSourceFileDetails() {
+		return listOfSourceFileDetails;
+	}
+
+	public void setListOfSourceFileDetails(
+			ArrayList<SourceFileDetailResponse> listOfSourceFileDetails) {
+		this.listOfSourceFileDetails = listOfSourceFileDetails;
 	}
 
 	
