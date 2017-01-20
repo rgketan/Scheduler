@@ -373,6 +373,8 @@ public class DataStorageHelper {
 		   		
 		   		scheduledEventObject.setTimerInfo(rs.getString("TIMER_INFO"));
 		   		
+		   		scheduledEventObject.setTimerInfo(rs.getString("TIMER_INFO"));
+		   		
 		   		if(rs.getString("TYPE_OF_EVENT").equalsIgnoreCase(EnumConstants.EMAILTYPEEVENT.getConstantType())){
 		   			scheduledEventObject.setRecipientAddress(rs.getString("RECIPIENT_ADDRESS"));
 		   		}else{
