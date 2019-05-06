@@ -3,15 +3,14 @@ package com.neozant.mail;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
@@ -31,7 +30,7 @@ public class EmailAttachmentSender {
 	public EmailAttachmentSender() {}
 	
 		
-	private  void sendEmailWithEmailContent(EmailContent emailContent)throws AddressException, MessagingException {
+	private  void sendEmailWithEmailContent(EmailContent emailContent)throws AddressException, MessagingException, UnsupportedEncodingException {
 		
 		
 		// sets SMTP server properties
@@ -43,25 +42,27 @@ public class EmailAttachmentSender {
 		properties.put("mail.smtp.starttls.enable", emailContent.getEnable());
 		properties.put("mail.debug", emailContent.getDebug());
 		
-		properties.put("mail.user", emailContent.getUserName());
-		properties.put("mail.password", emailContent.getPassword());
+		//properties.put("mail.user", emailContent.getUserName());
+		//properties.put("mail.password", emailContent.getPassword());
 		
-		final String userName=emailContent.getUserName(),
-				     passWord=emailContent.getPassword();
+		/*final String userName=emailContent.getUserName(),
+				     passWord=emailContent.getPassword();*/
 		
 
 		// creates a new session with an authenticator
-		Authenticator auth = new Authenticator() {
+		/*Authenticator auth = new Authenticator() {
 			public PasswordAuthentication getPasswordAuthentication() {
 				return new PasswordAuthentication(userName, passWord);
 			}
-		};
-		Session session = Session.getInstance(properties, auth);
+		};*/
+		Session session = Session.getInstance(properties, null);
 
 		// creates a new e-mail message
 		Message msg = new MimeMessage(session);
 
-		msg.setFrom(new InternetAddress(userName));
+		msg.setFrom(new InternetAddress("no_reply@example.com", "NoReply-JD"));
+		
+		msg.setReplyTo(InternetAddress.parse("no_reply@example.com", false));
 		
 		
 		InternetAddress[] toAddresses = { 
@@ -161,6 +162,12 @@ public class EmailAttachmentSender {
 			logger.error("EmailAttachmentSender:: SendEmailWithAttachment ERROR while sending EMAIL MessagingException:"+e.getMessage());
 			throw e;
 			//System.out.println("EmailAttachmentSender:: ERROR while sending EMAIL MessagingException:"+e.getMessage());
+		}catch (UnsupportedEncodingException e) {
+			successFlag=false;
+			e.printStackTrace();
+			logger.error("EmailAttachmentSender:: SendEmailWithAttachment ERROR while sending EMAIL UnsupportedEncodingException:"+e.getMessage());
+			throw e;
+			//System.out.println("EmailAttachmentSender:: ERROR while sending EMAIL MessagingException:"+e.getMessage());
 		}
 		
 		return successFlag;
@@ -178,8 +185,8 @@ public class EmailAttachmentSender {
 		
 		emailContent.setHost(property.getProperty("host"));
 		emailContent.setPort(property.getProperty("port"));
-		emailContent.setUserName(property.getProperty("user"));
-		emailContent.setPassword(property.getProperty("password"));
+		/*emailContent.setUserName(property.getProperty("user"));
+		emailContent.setPassword(property.getProperty("password"));*/
 		
 		emailContent.setDebug(property.getProperty("debug"));
 		
@@ -198,7 +205,7 @@ public class EmailAttachmentSender {
 			try {
 				sendEmailWithEmailContent(emailContent);
 				logger.info("EmailAttachmentSender::SendEmailWithMessage Email sent successfully.");
-			} catch (MessagingException e) {
+			} catch (Exception e) {
 				successFlag=false;
 				e.printStackTrace();
 				logger.error("EmailAttachmentSender::SendEmailWithMessage ERROR while sending EMAIL MessagingException:"+e.getMessage());
@@ -216,9 +223,9 @@ public class EmailAttachmentSender {
 			
 			emailContent.setHost(property.getProperty("host"));
 			emailContent.setPort(property.getProperty("port"));
-			emailContent.setUserName(property.getProperty("user"));
+			
 			emailContent.setToAddress(toAddress);//property.getProperty("to"));
-			emailContent.setPassword(property.getProperty("password"));
+			
 			emailContent.setMulipleAddress(multipleAddress);
 			
 			emailContent.setSubject(property.getProperty("subject"));
@@ -234,6 +241,8 @@ public class EmailAttachmentSender {
 			attachedFiles.add(fileToAttach);
 			emailContent.setAttachFiles(attachedFiles);
 			
+			//emailContent.setPassword(property.getProperty("password"));
+			//emailContent.setUserName(property.getProperty("user"));
 		
 		return emailContent;
 	}
